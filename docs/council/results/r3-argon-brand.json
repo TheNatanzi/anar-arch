@@ -1,0 +1,38 @@
+{
+ "model": "argon",
+ "role": "brand",
+ "score": 8.8,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "assets/css/site.css:359",
+   "what": "In `.cta--poster`, change `padding-block:clamp(96px,16vh,180px)` to `padding-block:clamp(64px,10vh,112px)` and reduce `.cta__wordmark` bottom margin to `clamp(20px,3.5vh,36px)`",
+   "why": "On desktop (shot 4), the excessive top padding pushes `.cta__wordmark` above the viewport fold when scrolled to the poster section, cutting off the top of the poster composition."
+  },
+  {
+   "where": "assets/css/site.css:192",
+   "what": "On `.leaf-band`, add `margin-top:clamp(32px,6vh,64px)` and change `background:var(--cream)` to `background:var(--brown)` while keeping the top mask",
+   "why": "The static leaf band above the brown poster CTA is currently invisible in scroll transitions because it blends directly into the ground/footer band without visual separation above the poster border."
+  },
+  {
+   "where": "assets/css/site.css:207",
+   "what": "Change `.hero__shade` box-shadow opacity from `rgba(67,38,23,.68)` to `rgba(67,38,23,.76)` and add a subtle bottom gradient inside `.hero__window` (`background:linear-gradient(to top,rgba(67,38,23,.45) 0%,transparent 35%)`)",
+   "why": "In the hero (shot 0), the bright white roses and table highlights inside the bottom of the arch window compete with the cream `ANAR EVENTS` wordmark, slightly reducing contrast on the inner letters."
+  },
+  {
+   "where": "assets/css/site.css:15",
+   "what": "Update `--red:#9E1B32` to `--red:#B81428` (or closer to the brand book's vibrant `#D10C0C` while maintaining AA contrast on `#F0E6D5`)",
+   "why": "The current `--red` (`#9E1B32`) reads as a muted burgundy/maroon rather than the vibrant pomegranate Anar red specified in the brand book (`#D10C0C`) and used in the header SVG wordmark."
+  },
+  {
+   "where": "assets/css/site.css:262",
+   "what": "In `.accordion__panel:not(.is-open) .accordion__label`, change `bottom:var(--s3)` to `top:50%;bottom:auto;transform:translate(50%,-50%) rotate(180deg)`",
+   "why": "Vertically centering the rotated titles (`NIKAH`, `MEHNDI & SANGEET`, `RECEPTION & WALIMA`) inside the collapsed accordion strips looks much more balanced and editorial than pinning them near the bottom edge."
+  },
+  {
+   "where": "assets/css/site.css:323",
+   "what": "Change `.field input,.field textarea,.field select` border from `1px solid var(--brown)` to `1px solid rgba(67,38,23,.45)` and add `background:rgba(255,255,255,.18)`",
+   "why": "Full-strength `1px solid #432617` boxes on all form inputs look slightly harsh and utilitarian against the soft editorial cream palette; softening the border and warming the fill elevates the form."
+  }
+ ]
+}

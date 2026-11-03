@@ -1,0 +1,40 @@
+{
+ "model": "fable",
+ "role": "planner",
+ "score": 6,
+ "blocking": [
+  "weddings.html Sofreh Aghd: \"We design an architectural, modern sofreh and lay it...\" reads as a sofreh-design (decor) service, which the hard rule forbids; one verb change fixes it"
+ ],
+ "fixes": [
+  {
+   "where": "weddings.html #sofreh-aghd, second paragraph",
+   "what": "Change \"We design an architectural, modern sofreh and lay it exactly as your family keeps it.\" to \"We plan the sofreh with your family and see it laid exactly as your family keeps it.\"",
+   "why": "Hard rule: nothing about decor; sofreh design is a decor vendor category in the Bay Area and parents will ask for it."
+  },
+  {
+   "where": "index.html #journey, stops 6 and 7",
+   "what": "Move the Mehndi stop before Aghd / Nikah (order: ... Planning, Khastegari, Mehndi, Aghd / Nikah, Reception, Thank-you).",
+   "why": "The henna night precedes the ceremony in Persian, Afghan and South Asian weddings; a planner who lists it after the nikah loses every parent's trust in one glance."
+  },
+  {
+   "where": "index.html .quote blockquote vs #who first paragraph",
+   "what": "The founder quote repeats the Who paragraph word for word (\"In our families a wedding is never two people...\"). Keep the quote as \"Keep the soul. Redefine the style.\" or cut that sentence from the Who paragraph.",
+   "why": "The same line twice on one page reads as filler and weakens the founder's voice."
+  },
+  {
+   "where": "assets/css/site.css .journey__note (1024px+ 13px, 1024-1279 12px) and .journey__en 15px",
+   "what": "Set journey notes to a minimum of 15px/22px in brown (not muted) and labels to 16px at every width; drop the 1024-1279 downsizing and let the nine stops wrap to two rows of labels instead.",
+   "why": "Parents and grandparents in their 60s read this on laptops; 12-13px muted text is the one part of the journey they cannot read."
+  },
+  {
+   "where": "index.html #who .pair",
+   "what": "Pair the eyebrow \"Who we are\" with a matching Persian line (\"ما که هستیم\") or change the eyebrow to \"Who we are for\"; \"برای چه کسانی\" means \"for whom\".",
+   "why": "A bilingual parent sees the two lines say different things and doubts the fluency claim."
+  },
+  {
+   "where": "index.html #journey stop 1 note and #inquire lede",
+   "what": "The journey's Enquiry note and the inquiry lede are the same sentence (\"Thank you for writing. Tell us about your family.\"); keep it only on the form and give the Enquiry stop its own short note (e.g. the Proposal note style).",
+   "why": "Repeated lines in adjacent sections make the nine stops feel padded rather than considered."
+  }
+ ]
+}

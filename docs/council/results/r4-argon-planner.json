@@ -1,0 +1,28 @@
+{
+ "model": "argon",
+ "role": "planner",
+ "score": 9.5,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "index.html:196 and weddings.html:132",
+   "what": "Add Afghan Attan and Takht-e-Khina explicitly to the Mehndi & Sangeet celebration description and the inquiry form's Traditions checklist (e.g., 'Mehndi / Hanabandan / Takht-e-Khina' and 'Attan').",
+   "why": "Afghan families are one of the three core audiences; seeing their specific henna night and national wedding dance named alongside Persian and South Asian rituals cements cultural fluency with Afghan elders."
+  },
+  {
+   "where": "index.html:214",
+   "what": "Change the Inquiry form's 'Wedding date' input from type=\"date\" to type=\"text\" with placeholder=\"Season / year or exact date (e.g., Fall 2027)\".",
+   "why": "Couples and parents inquiring for full-service multi-day planning often have a target season or venue window rather than a locked calendar date."
+  },
+  {
+   "where": "index.html:227",
+   "what": "Add an optional text field for 'Venue or Bay Area city (if known)' beside the Guest Count field in the inquiry form.",
+   "why": "Knowing whether the family is looking at Napa, SF, South Bay, or East Bay helps the planner immediately prepare relevant multi-day venue logistics for the first consultation."
+  },
+  {
+   "where": "index.html:247",
+   "what": "Change the Poster CTA button href=\"index.html#inquire\" to href=\"#inquire\" on index.html, or hide the redundant Poster CTA section on index.html since it sits immediately below the on-page inquiry form.",
+   "why": "Clicking 'Begin the conversation' right after scrolling past the inquiry form scrolls the user back up to the exact section they just left."
+  }
+ ]
+}

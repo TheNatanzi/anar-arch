@@ -1,0 +1,33 @@
+{
+ "model": "argon",
+ "role": "dev",
+ "score": 9,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "assets/js/site.js:245",
+   "what": "Extract the `[data-accordion]` click/hover/focus handler block and move it above `if (!motion) { return; }` (line 111).",
+   "why": "Currently, users with `prefers-reduced-motion: reduce` (or if GSAP fails to load) cannot open collapsed desktop accordion panels because the event listeners are skipped."
+  },
+  {
+   "where": "assets/css/site.css:156",
+   "what": "Add `.site-header--over.nav-open { background: var(--cream); color: var(--brown); }` and ensure `.site-header--over.nav-open .site-logo__red { display: block; }` / `.site-logo__cream { display: none; }`.",
+   "why": "If a mobile user opens the navigation menu at the very top of `index.html` before scrolling, the drawer is cream but the header bar above it stays transparent with cream icons."
+  },
+  {
+   "where": "index.html:127",
+   "what": "Add `aria-hidden=\"false\"` to the open `.accordion__body` and toggle `aria-hidden` (or the `hidden` attribute) on `.accordion__body` inside `site.js` when panels open/close on desktop.",
+   "why": "On desktop, closed accordion panels only hide their `.accordion__body` via `opacity: 0`, leaving collapsed text exposed to screen readers alongside `aria-expanded=\"false\"`."
+  },
+  {
+   "where": "index.html:214",
+   "what": "Add an AJAX submit handler in `site.js` for `.form` using `fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' } })` with inline status/error messaging.",
+   "why": "Provides graceful in-page feedback and error handling without forcing a full-page redirect away from the site."
+  },
+  {
+   "where": "assets/css/site.css:7",
+   "what": "Preload `TTRamillas-Regular.woff2` in `<head>` alongside Bold, or verify font-weight usage across body copy vs. the trial font files.",
+   "why": "`body` defaults to `font-weight: 400` (`TTRamillas-Regular.woff2`), while only `TTRamillas-Bold.woff2` is preloaded in `<head>`, risking a brief FOUT on body paragraphs."
+  }
+ ]
+}

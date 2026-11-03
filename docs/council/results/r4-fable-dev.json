@@ -1,0 +1,40 @@
+{
+ "model": "fable",
+ "role": "dev",
+ "score": 7,
+ "blocking": [
+  "Header nav links to how-we-work.html and about.html, but neither file exists in the build (only index.html and weddings.html): two of three nav items 404 on every page."
+ ],
+ "fixes": [
+  {
+   "where": "index.html:36-39 / weddings.html nav",
+   "what": "Ship how-we-work.html and about.html (the CSS for .steps/.faq/.letter/.story already exists), or drop the two links until they exist.",
+   "why": "Live 404s from the main nav are a launch blocker."
+  },
+  {
+   "where": "site.js block 0 (data-layer loop) + site.css .tree-frame img",
+   "what": "Skip setting src/srcset on leftBranch/rightBranch when !isDesktop() (or add loading=\"lazy\" and a <picture> media query), since both branches are display:none under 768px.",
+   "why": "Phones download ~250 KB of WebP they never paint."
+  },
+  {
+   "where": "index.html accordion <img> (4 panels)",
+   "what": "Add srcset with 800w/1200w variants and sizes=\"(min-width:768px) 60vw, 100vw\" to the four pom-*.jpg images; the closed desktop panels are ~90px wide yet load the full 1280x1920 (496 KB) files.",
+   "why": "~1.35 MB of JPEG for one strip; slow on mobile data."
+  },
+  {
+   "where": "site.css .journey__dot (mobile)",
+   "what": "Change left:-40px to left:-35px (or move .journey__line--v to left:6px) so the 14px dot centre (x=7) sits on the 2px line (x=11-13).",
+   "why": "Dots visibly sit 5px left of the track line on phones."
+  },
+  {
+   "where": "index.html <script defer> tags (gsap, ScrollTrigger, lenis)",
+   "what": "Add integrity + crossorigin=\"anonymous\" SRI hashes, or self-host the three pinned files in assets/js/vendor/.",
+   "why": "Two third-party origins with no subresource integrity on a site that hides content until GSAP runs."
+  },
+  {
+   "where": "site.js header/nav drawer handlers",
+   "what": "On Escape, return focus to .nav-toggle; also close the drawer on click outside and on resize to >=768px; add aria-hidden handling for the .site-nav when closed on mobile.",
+   "why": "Keyboard users lose focus position when the drawer closes."
+  }
+ ]
+}

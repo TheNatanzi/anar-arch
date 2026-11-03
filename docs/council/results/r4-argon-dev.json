@@ -1,0 +1,40 @@
+{
+ "model": "argon",
+ "role": "dev",
+ "score": 8,
+ "blocking": [
+  "On desktop (index-desktop-4.jpg), the fixed header overlaps and clips the top half of thecream 'ANAR EVENTS' wordmark inside the brown 'Reimagined Heritage' CTA poster frame, creating a broken double-logo collision."
+ ],
+ "fixes": [
+  {
+   "where": "assets/css/site.css (.cta--poster)",
+   "what": "Increase top padding on `.cta--poster` (e.g., `padding-top: clamp(112px, 16vh, 160px)`) or increase `.cta__wordmark` top margin so the inner poster wordmark clears the 96px fixed header when scrolled into view.",
+   "why": "In index-desktop-4.jpg, the fixed header's bottom edge slices directly through the `.cta__wordmark` SVG inside the poster frame."
+  },
+  {
+   "where": "assets/js/site.js:354 (block 4 & 7: getTotalLength)",
+   "what": "Wrap `p.getTotalLength()` in a `try { ... } catch (e) {}` or guard against hidden SVGs, and recalculate inside a `ScrollTrigger` `onRefresh` callback.",
+   "why": "`.journey__line--h` is `display:none` on mobile (<1024px) and `.journey__line--v` is `display:none` on desktop; calling `getTotalLength()` on `display:none` SVG paths returns 0 or throws in some browsers, breaking the line draw if the viewport is resized across the 1024px breakpoint."
+  },
+  {
+   "where": "assets/css/site.css:101 (.hero-toggle)",
+   "what": "Increase `.hero-toggle` touch target from `32px`/`36px` to `44px` × `44px` (or add a `-6px` invisible hit-area pseudo-element) on mobile.",
+   "why": "At 32×32px on 390px mobile, the video pause/play button in the header is below the WCAG 2.5.5 / Apple HIG 44×44px minimum touch target size and sits only 6px from the 'Inquire' link."
+  },
+  {
+   "where": "index.html:47 & assets/js/site.js:36 (hero clouds)",
+   "what": "Set `loading=\"lazy\"` or defer assigning `.src` on `.hero__cloud--1` and `.hero__cloud--2` until after initial paint / window `load`.",
+   "why": "Both 2752×1536 cloud WebPs start at `opacity: 0` off-screen and only appear on scroll, yet `site.js` immediately injects their `src` synchronously on DOMContentLoaded, competing with the hero poster and font for initial bandwidth."
+  },
+  {
+   "where": "assets/js/site.js:146 (closeNav / mobile drawer)",
+   "what": "When `.site-header.nav-open` is active on mobile, stop Lenis (`lenis.stop()`) and trap focus or close the drawer on outside click / scroll.",
+   "why": "Opening the mobile menu leaves the background page scrollable via touch/Lenis while the absolute drawer hangs open."
+  },
+  {
+   "where": "index.html:24 & weddings.html:24 (CDN scripts)",
+   "what": "Add `integrity` (SRI) and `crossorigin=\"anonymous\"` attributes to the external `cdnjs` (GSAP/ScrollTrigger) and `unpkg` (Lenis) script tags.",
+   "why": "Loading third-party scripts from public CDNs without Subresource Integrity hashes exposes the site to CDN supply-chain tampering."
+  }
+ ]
+}

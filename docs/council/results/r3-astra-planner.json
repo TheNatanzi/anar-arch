@@ -1,0 +1,31 @@
+{
+ "model": "astra",
+ "role": "planner",
+ "score": 6,
+ "blocking": [
+  "The mandatory TT Ramillas Bold rule is broken: body copy, captions, form inputs and several prominent statements use regular or italic faces.",
+  "Reduced-motion visitors cannot open the desktop celebration panels: accordion listeners are skipped, while closed-panel descriptions remain hidden."
+ ],
+ "fixes": [
+  {
+   "where": "assets/css/site.css — font declarations and Latin text styles",
+   "what": "Apply TT Ramillas Bold consistently to Latin text, including body copy, form controls, captions and statements; retain the separate Persian font.",
+   "why": "This is an explicit launch requirement and currently caps the score at 6."
+  },
+  {
+   "where": "assets/js/site.js — accordion setup below if (!motion) return",
+   "what": "Initialize accordion interaction before the motion-only return; keep every celebration accessible when animation libraries fail or reduced motion is enabled.",
+   "why": "Families must be able to inspect their celebration before trusting the studio with an inquiry."
+  },
+  {
+   "where": "assets/css/site.css — desktop .journey__note",
+   "what": "Expose the existing journey explanations on desktop through accessible expandable details or focus-and-click disclosures, preserving all nine stops.",
+   "why": "Parents see ritual names but lose the practical explanations of consultation, pricing and planning that build confidence."
+  },
+  {
+   "where": "index.html — inquiry form; assets/js/site.js — submission handling",
+   "what": "Mark the existing required fields visibly and add accessible submitting, success and failure states; preserve entered values after a failed request and keep phone/email alternatives available.",
+   "why": "A family needs clear confirmation that its inquiry arrived and a straightforward recovery path if delivery fails."
+  }
+ ]
+}

@@ -1,0 +1,42 @@
+{
+ "model": "astra",
+ "role": "dev",
+ "score": 6,
+ "blocking": [
+  "Hard-rule violation: Latin body text explicitly uses TT Ramillas Regular and Italic rather than Bold.",
+  "Reduced-motion users and visitors without GSAP cannot operate the desktop celebrations accordion: its event handlers are below the motion-only early return.",
+  "The looping hero video has no pause control and continues playing with reduced motion enabled."
+ ],
+ "fixes": [
+  {
+   "where": "assets/css/site.css — font definitions, body, eyebrow and italic styles",
+   "what": "Use the supplied TT Ramillas Bold face and weight 700 throughout Latin text; remove Regular/Italic overrides that violate the required typography.",
+   "why": "The current implementation breaks an explicit launch requirement."
+  },
+  {
+   "where": "assets/js/site.js — accordion initialization after if (!motion) return",
+   "what": "Initialize accordion interaction before the motion guard. Add panel IDs and aria-controls; hide collapsed desktop content accessibly, and expose all mobile cards without misleading collapsed states.",
+   "why": "Essential interaction must survive reduced motion and unavailable animation libraries."
+  },
+  {
+   "where": "index.html — hero video; assets/js/site.js — video IntersectionObserver",
+   "what": "Add a visible, keyboard-accessible pause/play button outside the logo area. Default to the poster for reduced motion and prevent the observer from overriding a user's pause.",
+   "why": "Continuous autoplay needs a stop mechanism, and the current observer ignores motion preferences."
+  },
+  {
+   "where": "assets/js/site.js — scrollToEl and same-page anchor handler; assets/css/site.css — anchor targets",
+   "what": "Add header-sized scroll-margin-top to section targets and main. Move focus to the destination after intercepted keyboard navigation, using tabindex=\"-1\" where necessary.",
+   "why": "The native fallback ignores the fixed header, and the intercepted skip link scrolls without reliably transferring focus."
+  },
+  {
+   "where": "assets/css/site.css — desktop .journey__stops",
+   "what": "Keep the vertical nine-stop layout until all nine labels fit their columns; use a measured wider breakpoint instead of switching at 768px.",
+   "why": "Nine narrow columns cannot reliably accommodate labels such as Consultation at tablet widths."
+  },
+  {
+   "where": "index.html — inquiry form; assets/js/site.js — form submission",
+   "what": "Add pending, success and failure states with an accessible status region; preserve entered values on failure and restore the submit button for retry.",
+   "why": "Native field validation exists, but the site provides no submission feedback or recoverable error handling; this is independent of the approved placeholder endpoint."
+  }
+ ]
+}

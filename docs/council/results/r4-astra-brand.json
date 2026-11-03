@@ -1,0 +1,36 @@
+{
+ "model": "astra",
+ "role": "brand",
+ "score": 6,
+ "blocking": [
+  "The accent system uses burgundy #9E1B32 instead of the specified Anar red #D10C0C.",
+  "Repeated ruled columns contradict the explicit no-grid-hairlines direction."
+ ],
+ "fixes": [
+  {
+   "where": "assets/css/site.css — :root; assets/logo/logo-red.svg",
+   "what": "Set --red to #D10C0C and match the existing red wordmark artwork’s fill without retyping or rebuilding it. Use brown for small text wherever the brighter red cannot provide sufficient contrast.",
+   "why": "The current burgundy changes the brand’s character throughout the page."
+  },
+  {
+   "where": "assets/css/site.css — .pillar, .you-get li, .behaviour li",
+   "what": "Remove the repeated border-top rules from these column layouts; retain hierarchy through spacing, numbers and headings. Preserve the intentional journey line and poster frame.",
+   "why": "The repeated rules make the cream sections feel like a ruled template rather than the specified brand composition."
+  },
+  {
+   "where": "assets/css/site.css — mobile .hero__window, .hero__shade, .hero__word",
+   "what": "Coordinate the mobile arch and wordmark positions so the wordmark overlaps the arch’s lower portion, retaining clear space for the tagline and header controls.",
+   "why": "At 390px, the arch ends around y=475 while the lettering begins around y=628; the signature composition separates into two disconnected elements."
+  },
+  {
+   "where": "assets/css/site.css — desktop .journey .container and .journey__stops",
+   "what": "Give the nine-stop journey its own wider content area with smaller desktop gutters; retain the vertical arrangement until all nine labels fit without mid-word wrapping. Remove overflow-wrap:anywhere from stop headings.",
+   "why": "The 1100px border-box container loses roughly 317px to gutters at 1440px, leaving about 80px per stop and undermining the intended elegant horizontal line."
+  },
+  {
+   "where": "assets/css/site.css — .form__row and .field; index.html — first inquiry row",
+   "what": "Bottom-align fields within each form row and give single-line inputs a consistent height, keeping the names helper directly beneath its label.",
+   "why": "The desktop email input starts higher and appears taller than the names input; this visible misalignment weakens an otherwise restrained inquiry layout."
+  }
+ ]
+}

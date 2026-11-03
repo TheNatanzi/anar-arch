@@ -1,0 +1,38 @@
+{
+ "model": "fable",
+ "role": "brand",
+ "score": 7,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "assets/css/site.css:14 (--red) and assets/logo/logo-red.svg fill",
+   "what": "Set --red to the brand book red #D10C0C and refill logo-red.svg (and the favicon) with #D10C0C; keep #9E1B32 only if the owner confirms a burgundy sub-brand, otherwise drop it. Re-check contrast of eyebrows/links on cream after the swap (#D10C0C on #F0E6D5 is ~4.3:1, fine at 16px bold).",
+   "why": "Every red on the site, including the wordmark itself, is a burgundy that is not the brand red; the header logo and the painted fruit are two different reds side by side."
+  },
+  {
+   "where": "index.html quote section, <svg class=\"signature kashida-draw\">",
+   "what": "Remove the generic scribble path under the founder quote. Until a real signature SVG arrives, use the 2px red kashida rule (.rule, 120px, centred) above 'Medi, founder'.",
+   "why": "A stock squiggle posing as a signature reads as costume and undercuts the 'owner's own words' premise of the quote."
+  },
+  {
+   "where": "assets/js/site.js block 3 (BRANCH_MAX) and site.css .tree-frame [data-layer] top:25vh",
+   "what": "Cap the parallax so the branch top never passes the header: BRANCH_MAX = max(0, 0.25*innerHeight - headerHeight - 16). Alternatively add a top fade to the branch mask (mask-composite with a 0-96px vertical gradient).",
+   "why": "From the Inquire section down (desktop-3, journey shots) both branches slide under the fixed cream bar and look clipped by a bug, not framed."
+  },
+  {
+   "where": "site.css .tree-frame [data-layer] display:none under 768px",
+   "what": "On phones show one branch tip only: the left branch at 150px wide, top 60vh, opacity .8, masked to stop 24px before the gutter, pointer-events none; keep it fixed so it never sits over text columns wider than the gutter (gutter is 48px, so the tip lives in the margin and fades out).",
+   "why": "At 390px the pomegranate frame vanishes for the whole scroll until the leaf band; the phone page is plain cream and loses the brand's signature device."
+  },
+  {
+   "where": "site.css .accordion__panel:not(.is-open) .accordion__media img and ::after gradient",
+   "what": "Closed strips: filter blur(2px) instead of 6px, scale 1.04; closed-panel gradient to rgba(67,38,23,.7) 0% to .15 60% to 0 100%; flex 1.4 1 0 so a strip is ~115px and a sliver of fruit reads; label 13px, letter-spacing .12em.",
+   "why": "The three closed panels render as brown mud strips (desktop-2); the fruit, the whole point of the stand-ins, is invisible and the section looks dull next to the open panel."
+  },
+  {
+   "where": "site.css @media (min-width:1024px) and (max-width:1279px) journey rules",
+   "what": "Extend the 15px/letter-spacing 0 rule to max-width 1439px, set .journey__stop{overflow-wrap:normal;hyphens:manual} and let .journey__note wrap at 12px; at 1440px+ allow 16px.",
+   "why": "At 1280 'Consultati / on' breaks mid-word and 'Aghd / Nikah' splits onto two lines on the hero line of the journey."
+  }
+ ]
+}

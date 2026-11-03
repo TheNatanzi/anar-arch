@@ -1,0 +1,36 @@
+{
+ "model": "astra",
+ "role": "brand",
+ "score": 6,
+ "blocking": [
+  "The Latin typography breaks the mandatory Bold rule: body copy, captions, eyebrows and the founder quote explicitly use Regular or Italic.",
+  "The accent token is burgundy #9E1B32 instead of the specified Anar red #D10C0C."
+ ],
+ "fixes": [
+  {
+   "where": "assets/css/site.css — @font-face, body, .eyebrow, .caption, .quote",
+   "what": "Use TT Ramillas Bold at weight 700 throughout Latin text; remove Regular/Italic overrides and distinguish hierarchy through size and spacing.",
+   "why": "The current lighter editorial typography visibly departs from the required brand system."
+  },
+  {
+   "where": "assets/css/site.css — :root; assets/logo/logo-red.svg",
+   "what": "Set --red to #D10C0C and verify that the existing red wordmark asset uses that same fill without recreating its lettering.",
+   "why": "The burgundy accents and header mark mute the specified brand red."
+  },
+  {
+   "where": "assets/css/site.css — mobile .hero__word, .hero__window, .hero__shade",
+   "what": "Position the mobile wordmark across the lower portion of the arch, keeping its kashida and tagline clear; size and position these elements as one composition.",
+   "why": "At 390px the arch ends around y450 while the lettering starts around y650, disconnecting the two defining brand elements."
+  },
+  {
+   "where": "assets/css/site.css — .pillar, .you-get li, .behaviour li",
+   "what": "Remove repeated card-top borders and use spacing to separate entries; retain the intentional journey line, kashida and poster frame.",
+   "why": "Repeated rules create the prohibited grid-line treatment and make the cream sections feel templated."
+  },
+  {
+   "where": "assets/css/site.css — header logo visibility; assets/js/site.js — motion fallback",
+   "what": "Keep the home-page header logo hidden at the top in reduced-motion and failed-animation-library states, revealing it after the hero without a morph.",
+   "why": "Currently only the motion-enabled state preserves the deliberately empty header; fallback states display a second logo above the hero wordmark."
+  }
+ ]
+}

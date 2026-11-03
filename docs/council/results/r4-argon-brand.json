@@ -1,0 +1,30 @@
+{
+ "model": "argon",
+ "role": "brand",
+ "score": 8,
+ "blocking": [
+  "On desktop (index-desktop-4.jpg), the fixed header overlaps and slices through the top of the brown 'Reimagined Heritage' poster-frame CTA, cutting the cream wordmark in half right underneath the red header wordmark."
+ ],
+ "fixes": [
+  {
+   "where": "assets/css/site.css (.cta--poster)",
+   "what": "Increase top padding on .cta--poster (e.g., padding-top: calc(var(--header-h) + clamp(48px, 8vh, 80px))) and offset the inset border top: calc(var(--header-h) + 24px) on desktop, or hide/unstick the header when entering #cta.",
+   "why": "In index-desktop-4.jpg, the fixed 96px cream header covers the top of the brown poster frame and slices the cream wordmark in half, creating a harsh visual collision of two stacked wordmarks."
+  },
+  {
+   "where": "assets/css/site.css (:root)",
+   "what": "Update --red from #9E1B32 to #D10C0C (or align with the SVG logo fill).",
+   "why": "The brand book specifies #D10C0C for red, and the current #9E1B32 CSS token visibly mismatches the brighter red in logo-red.svg."
+  },
+  {
+   "where": "assets/css/site.css (.faq details, .you-get li, .behaviour li)",
+   "what": "Change border-bottom: 1px solid var(--red) and border-top: 1px solid var(--red) to 2px solid var(--red).",
+   "why": "The brand book forbids 1px grid hairlines; all structural kashida dividers must match the 2px stroke weight used in .pillar and .rule."
+  },
+  {
+   "where": "assets/css/site.css (.accordion__label)",
+   "what": "Remove transform: rotate(180deg) before the second transform declaration, and increase font-size to 15px with letter-spacing: 0.1em.",
+   "why": "Duplicate transform property in CSS is redundant, and slightly more breathing room on the vertical accordion spine labels improves editorial legibility against blurred imagery."
+  }
+ ]
+}

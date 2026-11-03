@@ -1,0 +1,41 @@
+{
+ "model": "fable",
+ "role": "dev",
+ "score": 6.5,
+ "blocking": [
+  "Hero video weight: hero-1080.mp4 is 30.9 MB and hero-720.mp4 is 12.1 MB, and the `media` attribute on <video><source> is ignored by Chrome/Edge/Firefox, so phones download the 31 MB 1080 file. Must re-encode (target ≤4 MB desktop, ≤2 MB phone, 10–15 s loop, CRF 28–30, no audio track) and pick the source in JS.",
+  "With motion on, the page has no accessible <h1>: site.js adds .is-built which sets .hero__word to visibility:hidden (removed from the accessibility tree) and the morph layer is aria-hidden. Screen readers and SEO get no h1 on the home page."
+ ],
+ "fixes": [
+  {
+   "where": "index.html hero <video> sources + site.js block 0",
+   "what": "Replace the two <source media> tags with one <source> whose src is chosen in JS: `var src = matchMedia('(min-width:901px)').matches ? 'hero-1080.mp4' : 'hero-720.mp4'`; set heroVideo.src then .load(). Re-encode both files (ffmpeg -c:v libx264 -crf 29 -preset slow -an -movflags +faststart, trim loop to ~12 s) so 1080 ≤ 4 MB and 720 ≤ 2 MB. Add `fetchpriority=\"high\"` to the poster via <link rel=preload as=image>.",
+   "why": "source[media] is dead in every major browser except old Safari; today every phone pulls 31 MB on first paint."
+  },
+  {
+   "where": "site.css line `.motion .page-index .logo-morph.is-built ~ main .hero__word{visibility:hidden}`",
+   "what": "Change to `opacity:0;pointer-events:none` (or keep visibility:hidden on the <img> only and add a visually-hidden <span>Anar Events</span> inside the <h1>).",
+   "why": "visibility:hidden strips the h1 from the accessibility tree; the only remaining copy is aria-hidden."
+  },
+  {
+   "where": "index.html <meta property=\"og:image\">",
+   "what": "Use an absolute URL: `https://anarevents.com/assets/video/hero-poster.jpg`, and add `<link rel=\"canonical\">` plus og:url. Same on weddings.html (add og tags there; it has none).",
+   "why": "Open Graph scrapers (iMessage, WhatsApp, Instagram DMs, which is how families share this) reject relative og:image, so link previews show no picture."
+  },
+  {
+   "where": "site.css @media (min-width:768px) .journey__stops{grid-template-columns:repeat(9,1fr)}",
+   "what": "Keep the vertical list up to 1023px and switch to the 9-column line only at `@media (min-width:1024px)`; at 1024+ add `overflow-wrap:anywhere` on .journey__en. Move the --h/--v line toggles to the same breakpoint.",
+   "why": "At 768–900px each column is ~65px; 'Consultation' and 'Khastegari' at 16px bold overflow into neighbouring stops (iPad portrait)."
+  },
+  {
+   "where": "index.html #inquire form (labels, submit)",
+   "what": "Mark required fields in the label (`Your names <span class=\"req\">(required)</span>`), add `aria-describedby` for the names placeholder hint, add a `<p role=\"status\" class=\"form__status\" aria-live=\"polite\">` and a small fetch() submit in site.js that posts with `Accept: application/json`, disables the button while sending, and writes success/error text into the status node (fallback to native POST when fetch fails). Give .check labels `min-height:24px;padding-block:4px`.",
+   "why": "Nothing tells users which fields are required (WCAG 3.3.2), there is no success/error state at all, and the checkbox rows are under the 24px target minimum on phone."
+  },
+  {
+   "where": "assets/tree/painted/*.webp + index.html .tree-frame/.hero__cloud/.leaf-band imgs",
+   "what": "Export the branch, cloud, canopy and ground WebPs at 1400px wide (they render at ≤520px for branches, ≤1440px for bands) with `srcset`/`sizes`, add `decoding=\"async\"` and `loading=\"lazy\"` to the two hero clouds, and add `<link rel=\"preconnect\">` for cdnjs.cloudflare.com and unpkg.com (or self-host gsap/lenis).",
+   "why": "1.65 MB of 2752px art ships for 220–520px slots and competes with the video on first load; the two script CDNs add two cold TLS handshakes before any motion can start."
+  }
+ ]
+}

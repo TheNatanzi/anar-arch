@@ -1,0 +1,42 @@
+{
+ "model": "astra",
+ "role": "dev",
+ "score": 7,
+ "blocking": [
+  "Mobile navigation is unavailable when site.js fails: links remain display:none and the menu button has no native fallback.",
+  "The perpetual branch animation has no pause control; the visible pause button controls only video.",
+  "Closing the mobile menu with Escape can leave keyboard focus inside the now-hidden navigation."
+ ],
+ "fixes": [
+  {
+   "where": "assets/css/site.css — .site-nav; assets/js/site.js — mobile drawer",
+   "what": "Keep mobile navigation visible by default; collapse it only after drawer handlers initialize successfully. Hide the toggle until initialization.",
+   "why": "Navigation must remain usable when JavaScript fails or is blocked."
+  },
+  {
+   "where": "assets/js/site.js — closeNav and Escape handler",
+   "what": "When Escape closes an open drawer, return focus to navToggle. Close the drawer when keyboard focus moves outside the header, and reset its state when entering the desktop breakpoint.",
+   "why": "Prevents hidden focus and a lingering drawer covering the page during keyboard navigation or resizing."
+  },
+  {
+   "where": "assets/js/site.js — branch sway and reduced-motion initialization",
+   "what": "Provide a pause mechanism for continuous decorative animation, or stop branch sway after a finite introduction. Listen for reduced-motion preference changes and tear down Lenis and motion timelines while restoring visible content.",
+   "why": "The video pause button leaves infinite branch motion running, and changing the system preference currently leaves GSAP animations active."
+  },
+  {
+   "where": "assets/css/site.css — .hero__cloud; assets/js/site.js — hero timeline",
+   "what": "Hide cloud layers by default and reveal them only when their motion timeline is initialized; preserve the unobstructed poster and arch in reduced-motion and dependency-failure modes.",
+   "why": "Cloud sources load before the motion guard, but their initial opacity and positioning are established only by GSAP."
+  },
+  {
+   "where": "assets/js/site.js — accordion open and syncBodies",
+   "what": "At mobile widths, expose all stacked bodies as expanded and remove inactive overlay triggers from interaction; restore the single-expanded-panel behavior and button semantics on desktop.",
+   "why": "Phones show every body while three triggers announce aria-expanded=false; tapping them produces no corresponding disclosure change."
+  },
+  {
+   "where": "assets/css/site.css — .form__row and .field",
+   "what": "Align paired fields at the bottom of each row and give single-line inputs a consistent height, allowing helper text above them without stretching adjacent controls.",
+   "why": "The desktop screenshot shows the email input taller and starting above the names input because the two field grids contain different numbers of rows."
+  }
+ ]
+}

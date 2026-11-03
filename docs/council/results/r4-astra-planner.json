@@ -1,0 +1,28 @@
+{
+ "model": "astra",
+ "role": "planner",
+ "score": 7,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "assets/css/site.css — .journey__stops desktop layout",
+   "what": "Keep the nine-stop journey vertical until each desktop column can accommodate its labels without mid-word wrapping; increase notes to at least 16px.",
+   "why": "Parents need to read the planning process comfortably; nine narrow columns undermine the reassurance this section should provide."
+  },
+  {
+   "where": "assets/css/site.css — .checks and .check",
+   "what": "At 390px, stack tradition choices in one column and give each clickable label a minimum 44px height.",
+   "why": "Long tradition names compete for limited width, and small selection targets add friction for parents completing the inquiry."
+  },
+  {
+   "where": "assets/css/site.css — .accordion__label",
+   "what": "Keep every collapsed celebration name horizontal and fully readable, using a horizontal label within the existing panel.",
+   "why": "Families should find their celebration immediately without rotating their heads or discovering the correct panel through trial and error."
+  },
+  {
+   "where": "index.html — inquiry form; assets/css/site.css — .field",
+   "what": "Align the names and email inputs at their bottom edges and use a consistent input height despite the names helper text.",
+   "why": "The visibly mismatched first row makes the primary inquiry surface feel less carefully managed than the service promises."
+  }
+ ]
+}

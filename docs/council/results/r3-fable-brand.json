@@ -1,0 +1,41 @@
+{
+ "model": "fable",
+ "role": "brand",
+ "score": 7,
+ "blocking": [
+  "Desktop hero (index-desktop-0): the arch window's 2px cream outline runs behind the cream wordmark and the letters 'AR EV' sit on near-white video (white sculpture, glass, pale hydrangea); the hard rule 'big cream wordmark readable over the video' is only just met and the cream-on-cream line crossing the letters reads as a collision, not a poster",
+  "Palette drift: --red is #9E1B32 (burgundy) and --seed #E8243F, not the book's #D10C0C; every rule, eyebrow, dot, button and the header wordmark are off-brand red site-wide"
+ ],
+ "fixes": [
+  {
+   "where": "assets/css/site.css :root tokens (--red, --seed)",
+   "what": "Set --red:#D10C0C; drop --seed or alias it to #D10C0C; confirm assets/logo/logo-red.svg fill is #D10C0C",
+   "why": "The brand book names one red; burgundy makes the whole cream build look like a different studio"
+  },
+  {
+   "where": "assets/css/site.css .hero__shade,.hero__window (min-width:768px) and .hero__word img / .logo-morph__cream",
+   "what": "Cap the window so its foot clears the wordmark: max-height:calc(100svh - 10vh - 8vh - min(92vw,1100px)*0.345 - 32px); and add filter:drop-shadow(0 2px 14px rgba(67,38,23,.55)) to the wordmark img and .logo-morph__cream",
+   "why": "Keeps the arch and the word as two clean shapes and guarantees the cream wordmark reads over pale footage"
+  },
+  {
+   "where": "assets/js/site.js block 3 (BRANCH_MAX = 220) and .tree-frame img",
+   "what": "Raise BRANCH_MAX to ~40vh and add a slow 8s ±1.2deg rotate/sway tween (paused under reduced motion) on each branch",
+   "why": "In desktop shots 1–3 the branches sit in exactly the same spot; they read as stuck watermarks, not living art"
+  },
+  {
+   "where": "assets/css/site.css .site-footer border-top and .site-footer__bottom border-top",
+   "what": "Remove .site-footer border-top (the ground band already separates CTA and footer); set .site-footer__bottom border to the 2px cream kashida rule at .25 opacity",
+   "why": "The 1px seam between brown CTA and brown ground band is a grid hairline the brand forbids"
+  },
+  {
+   "where": "assets/css/site.css .hero__tag (phone) and .hero__shade (phone, top:9vh)",
+   "what": "Phone: move window top to 12vh so it clears the header, and give .hero__tag a text-shadow:0 1px 6px rgba(67,38,23,.6) or keep it on one line by hiding the Persian half at <400px",
+   "why": "index-phone-0: the arch kisses the header row and the two-line mixed-script tagline on raw video looks cramped"
+  },
+  {
+   "where": "index.html .cta--poster + assets/css/site.css .cta--poster::before",
+   "what": "Thicken the inset frame to 2px and colour the kashida-tagline rules amber (var(--amber)) on brown",
+   "why": "On brown the brand accent is amber; the poster currently uses cream only and its 1px frame is a hairline"
+  }
+ ]
+}

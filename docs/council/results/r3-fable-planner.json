@@ -1,0 +1,40 @@
+{
+ "model": "fable",
+ "role": "planner",
+ "score": 7,
+ "blocking": [
+  "Journey ritual order is culturally wrong: Khastegari (the proposal visit, which happens before any planner is hired) sits at stop 5 after Proposal and Planning, and Mehndi (stop 7) comes after Aghd/Nikah (stop 6). In Persian, Afghan and South Asian weddings the henna night precedes the aghd/nikah. Parents will notice; it undercuts the 'fluent in the unspoken details' claim."
+ ],
+ "fixes": [
+  {
+   "where": "index.html:192-194 (journey stops 5-7)",
+   "what": "Reorder to: Khastegari, Mehndi, Aghd / Nikah, Reception. If Khastegari must stay as a stop, move it to stop 1 or drop it, since it precedes the enquiry; otherwise sequence the ritual stops as families live them: henna night, then aghd/nikah, then reception/walima.",
+   "why": "Cultural accuracy is the whole pitch; one wrong order on the signature section costs trust with elders."
+  },
+  {
+   "where": "assets/css/site.css:268 (.journey__note{display:none} at ≥768px)",
+   "what": "Show the notes on desktop (12-13px italic muted under each label, or reveal on hover/focus with the dot). Keep them hidden only below 600px if space is tight.",
+   "why": "On desktop the nine stops are bare labels; a parent cannot tell what 'Proposal' or 'Thank-you' means in the process."
+  },
+  {
+   "where": "index.html:212 (inquiry form) and site.js",
+   "what": "Submit with fetch to the Formspree action, show an inline success line ('Thank you. We reply within one business day.') and an inline error with the phone/WhatsApp fallback; mark required fields with a visible asterisk and an aria-live status region.",
+   "why": "Today a submit leaves the site for Formspree's page; the family never sees a branded confirmation and a failure is silent."
+  },
+  {
+   "where": "index.html:92 and :170 (Who we are paragraph and founder quote)",
+   "what": "Remove 'In our families a wedding is never two people. It is parents, grandparents, the whole table.' from the Who we are paragraph (start at 'Anar Events plans and runs…') so the founder quote owns that line.",
+   "why": "The same sentence appears twice within two screens; it reads as filler rather than conviction."
+  },
+  {
+   "where": "index.html after the founder quote (line ~175)",
+   "what": "Add a clearly marked proof slot: one testimonial figure (quote, family name, city) plus a 'weddings since 20XX' line, with placeholder text in brackets.",
+   "why": "The home page has no slot at all for proof; parents choosing a planner look for other families' words before they inquire."
+  },
+  {
+   "where": "assets/css/site.css:191-196 (.hero__tag)",
+   "what": "Raise the hero tagline to 16px on phone and 18px on desktop, split Persian and English onto two lines, and add a soft text-shadow (0 1px 12px rgba(67,38,23,.6)). Also align spelling: 'Enquiry' (index.html:188, form _subject) vs 'Inquire' everywhere else; use 'Inquiry'.",
+   "why": "The Persian line is the one elders read first and at 14px italic over roses it is the least legible text on the page; the spelling split looks careless to a US audience."
+  }
+ ]
+}

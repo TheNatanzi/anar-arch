@@ -1,0 +1,38 @@
+{
+ "model": "argon",
+ "role": "planner",
+ "score": 8,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "assets/css/site.css:357",
+   "what": "Remove `.journey__note{display:none}` inside `@media (min-width:768px)` and adjust the desktop `.journey__stops` grid (e.g., to a 3x3 layout or increased gap) so the notes remain visible.",
+   "why": "Hiding the journey notes on desktop strips away your best trust-building lines for parents ('First meeting with parents and grandparents. Elders first.', 'Ritual by ritual, in both languages')."
+  },
+  {
+   "where": "index.html:231",
+   "what": "Add a venue/location text field to the inquiry form: `<div class=\"field\"><label for=\"f-venue\">Venue or city (if known)</label><input id=\"f-venue\" name=\"venue\" type=\"text\" placeholder=\"San Francisco, Napa, South Bay, TBD\"></div>` alongside `Guest count`.",
+   "why": "In the Bay Area, knowing whether a 250-guest multi-day cultural production is in SF, Napa, or the South Bay is critical for qualifying the inquiry and preparing for the first family consultation."
+  },
+  {
+   "where": "index.html:214",
+   "what": "Change the `wedding_date` input from `type=\"date\"` to `type=\"text\"` with `placeholder=\"e.g. Fall 2026 or Oct 10–12, 2026\"` and label `Wedding date or season`.",
+   "why": "Multi-day Persian, Afghan, and South Asian weddings span 2 to 4 days and families often inquire with a target season before booking a venue; a strict single-date picker creates unnecessary friction."
+  },
+  {
+   "where": "index.html:230",
+   "what": "Add `<label class=\"check\"><input type=\"checkbox\" name=\"traditions\" value=\"Shirini-khori / engagement\"> Shirini-khori / engagement</label>` or an `Other / blended` option to the Traditions fieldset.",
+   "why": "Afghan and Persian families frequently include Shirini-khori (or South Asian families include Haldi/Dholki/Roka), and interfaith/blended couples need an obvious way to signal their traditions."
+  },
+  {
+   "where": "index.html:162",
+   "what": "Update the Persian label in the Mehndi & Sangeet accordion panel from `حنابندان` to `حنابندان · سنگیت` (and match in `weddings.html:134`).",
+   "why": "Pairing the Persian/Afghan term for Henna night alongside Sangeet in the script shows equal fluency and respect for South Asian families reading the headings."
+  },
+  {
+   "where": "index.html:243",
+   "what": "Add a direct WhatsApp link next to the phone and email in `.form__note`: `Or call <a href=\"tel:+19252639949\">(925) 263-9949</a> · <a href=\"https://wa.me/19252639949\" rel=\"noopener\">WhatsApp</a> · <a href=\"mailto:hello@anarevents.com\">hello@anarevents.com</a>`.",
+   "why": "Persian, Afghan, and South Asian parents and couples overwhelmingly prefer WhatsApp for initial outreach; having it right beneath the form submit button (not just in the footer) captures hesitant leads."
+  }
+ ]
+}
