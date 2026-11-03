@@ -8,7 +8,10 @@
 <meta name="theme-color" content="#F0E6D5">
 <meta property="og:title" content="Anar Events · Reimagined Heritage">
 <meta property="og:description" content="Bespoke Persian, Afghan & South Asian weddings. Deeply fluent in the traditions your family cherishes; obsessed with the modern aesthetic you actually want.">
-<meta property="og:image" content="assets/video/hero-poster.jpg">
+<meta property="og:image" content="https://anarevents.com/assets/video/hero-poster.jpg">
+<meta property="og:url" content="https://anarevents.com/">
+<meta property="og:type" content="website">
+<link rel="canonical" href="https://anarevents.com/">
 <script>document.documentElement.classList.add('js')</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,8 +29,8 @@
 
 <!-- The pomegranate branches frame the page: left, right and bottom only (painted WebPs; sources come from TREE_LAYERS in site.js). The leaf and ground bands are static, further down. -->
 <div class="tree-frame" aria-hidden="true">
-  <img data-layer="leftBranch" width="2752" height="1536" alt="" loading="lazy" decoding="async">
-  <img data-layer="rightBranch" width="2752" height="1536" alt="" loading="lazy" decoding="async">
+  <img data-layer="leftBranch" width="2752" height="1536" alt="" decoding="async">
+  <img data-layer="rightBranch" width="2752" height="1536" alt="" decoding="async">
 </div>
 
 <header class="site-header site-header--over">
@@ -44,7 +47,11 @@
       <img class="site-logo__red" src="assets/logo/logo-red.svg" width="1600" height="552" alt="Anar Events">
       <img class="site-logo__cream" src="assets/logo/logo-cream.svg" width="1600" height="552" alt="" aria-hidden="true">
     </a>
-    <a class="site-inquire" href="index.html#inquire">Inquire</a>
+    <div class="site-header__end">
+      <a class="site-inquire" href="index.html#inquire">Inquire</a>
+      <!-- Pause video / Play video: docked in the bar, never over content (site.js block 0); aria-pressed="true" = paused -->
+      <button class="hero-toggle" type="button" aria-label="Pause video" aria-pressed="false"></button>
+    </div>
   </div>
 </header>
 
@@ -58,16 +65,15 @@
 
   <!-- 1. Hero: looping video seen through the mirror window; the word is the logo -->
   <section class="hero" aria-label="Anar Events">
-    <video class="hero__video" autoplay muted loop playsinline preload="metadata" poster="assets/video/hero-poster.jpg" width="1920" height="1080" aria-hidden="true" tabindex="-1">
-      <source src="assets/video/hero-1080.mp4" type="video/mp4" media="(min-width: 901px)">
-      <source src="assets/video/hero-720.mp4" type="video/mp4">
-    </video>
+    <!-- no src here: site.js block 0 appends the loop mp4 (1080 from 901px, else 720) after window 'load', never under
+         reduced motion or Save-Data; the poster shows until then and whenever the video is paused -->
+    <video class="hero__video" muted loop playsinline disablepictureinpicture disableremoteplayback preload="none" poster="assets/video/hero-poster-small.jpg" width="1920" height="1080" aria-hidden="true" tabindex="-1" data-src-desktop="assets/video/hero-1080-loop.mp4" data-src-mobile="assets/video/hero-720-loop.mp4"></video>
     <div class="hero__shade" aria-hidden="true"></div>
     <div class="hero__window" aria-hidden="true"></div>
     <img class="hero__cloud hero__cloud--2" data-layer="cloud2" width="2752" height="1536" alt="" aria-hidden="true">
     <img class="hero__cloud hero__cloud--1" data-layer="cloud1" width="2752" height="1536" alt="" aria-hidden="true">
-    <h1 class="hero__word"><img src="assets/logo/logo-cream.svg" width="1600" height="552" alt="Anar Events"></h1>
-    <p class="hero__tag"><span class="fa" lang="fa" dir="rtl">جشن خانوادهٔ شما، به روش خودتان</span> · Timeless traditions, curated for the modern era.</p>
+    <h1 class="hero__word"><img src="assets/logo/logo-cream.svg" width="1600" height="552" alt="" aria-hidden="true"><span class="visually-hidden">Anar Events</span></h1>
+    <p class="hero__tag"><span class="fa" lang="fa" dir="rtl">جشن خانوادهٔ شما، به روش خودتان</span><span class="hero__tag__sep" aria-hidden="true"> · </span><span class="hero__tag__en">Timeless traditions, curated for the modern era.</span></p>
     <div class="hero__fade" aria-hidden="true"></div>
   </section>
 
@@ -120,9 +126,9 @@
       <div class="accordion reveal" data-accordion>
         <article class="accordion__panel is-open">
           <div class="accordion__media"><img src="assets/img/pom-open-closeup.jpg" width="2000" height="1123" alt="An opened pomegranate, seeds packed tight" loading="lazy" decoding="async"></div>
-          <button class="accordion__trigger" type="button" aria-expanded="true"><span class="visually-hidden">Show Sofreh Aghd</span></button>
+          <button class="accordion__trigger" type="button" aria-expanded="true" aria-controls="acc-sofreh"><span class="visually-hidden">Show Sofreh Aghd</span></button>
           <span class="accordion__label" aria-hidden="true">Sofreh Aghd</span>
-          <div class="accordion__body">
+          <div class="accordion__body" id="acc-sofreh">
             <p class="fa" lang="fa" dir="rtl">سفرهٔ عقد</p>
             <h3>Sofreh Aghd</h3>
             <p>The spread, the mirror, the sugar above. Architectural, modern, and laid exactly as your family keeps it.</p>
@@ -130,9 +136,9 @@
         </article>
         <article class="accordion__panel">
           <div class="accordion__media"><img src="assets/img/pom-split-leaves.jpg" width="1280" height="1920" alt="A split pomegranate among its leaves" loading="lazy" decoding="async"></div>
-          <button class="accordion__trigger" type="button" aria-expanded="false"><span class="visually-hidden">Show Nikah</span></button>
+          <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="acc-nikah"><span class="visually-hidden">Show Nikah</span></button>
           <span class="accordion__label" aria-hidden="true">Nikah</span>
-          <div class="accordion__body">
+          <div class="accordion__body" id="acc-nikah">
             <p class="fa" lang="fa" dir="rtl">نکاح</p>
             <h3>Nikah</h3>
             <p>The contract, read before witnesses and both families. Quiet, exact, unhurried.</p>
@@ -140,9 +146,9 @@
         </article>
         <article class="accordion__panel">
           <div class="accordion__media"><img src="assets/img/pom-seeds-tray.jpg" width="1920" height="1355" alt="Pomegranate seeds in a bowl on a tray" loading="lazy" decoding="async"></div>
-          <button class="accordion__trigger" type="button" aria-expanded="false"><span class="visually-hidden">Show Mehndi and Sangeet</span></button>
+          <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="acc-mehndi"><span class="visually-hidden">Show Mehndi and Sangeet</span></button>
           <span class="accordion__label" aria-hidden="true">Mehndi &amp; Sangeet</span>
-          <div class="accordion__body">
+          <div class="accordion__body" id="acc-mehndi">
             <p class="fa" lang="fa" dir="rtl">حنابندان</p>
             <h3>Mehndi &amp; Sangeet</h3>
             <p>The henna night: music, dance, henna on the bride's hands, and both families singing.</p>
@@ -150,9 +156,9 @@
         </article>
         <article class="accordion__panel">
           <div class="accordion__media"><img src="assets/img/pom-tree-night.jpg" width="1125" height="2000" alt="A pomegranate tree at night" loading="lazy" decoding="async"></div>
-          <button class="accordion__trigger" type="button" aria-expanded="false"><span class="visually-hidden">Show Reception and Walima</span></button>
+          <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="acc-reception"><span class="visually-hidden">Show Reception and Walima</span></button>
           <span class="accordion__label" aria-hidden="true">Reception &amp; Walima</span>
-          <div class="accordion__body">
+          <div class="accordion__body" id="acc-reception">
             <p class="fa" lang="fa" dir="rtl">جشن عروسی</p>
             <h3>Reception &amp; Walima</h3>
             <p>From the elders' blessing to the 2 AM dance floor: one timeline, called with the venue and every vendor.</p>
@@ -209,12 +215,12 @@
       <h2 id="inquire-title" class="reveal" style="margin:8px 0 16px">Begin the conversation</h2>
       <p class="reveal measure" style="margin-bottom:40px">Thank you for writing. Tell us about your family. We reply within one business day.</p>
       <!-- Formspree: replace FORMSPREE_ID with the real form id -->
-      <form class="form reveal" action="https://formspree.io/f/FORMSPREE_ID" method="POST">
+      <form class="form reveal" action="https://formspree.io/f/FORMSPREE_ID" method="POST" data-ajax>
         <input type="hidden" name="_subject" value="New enquiry from anarevents.com">
         <input type="text" name="_gotcha" class="visually-hidden" tabindex="-1" autocomplete="off" aria-hidden="true">
         <div class="form__row">
-          <div class="field"><label for="f-names">Your names</label><input id="f-names" name="names" type="text" autocomplete="name" required placeholder="Sara &amp; Omid"></div>
-          <div class="field"><label for="f-email">Email</label><input id="f-email" name="email" type="email" autocomplete="email" required></div>
+          <div class="field"><label for="f-names">Your names <span class="field__req">(required)</span></label><p class="field__help" id="f-names-help">Couple or parent names</p><input id="f-names" name="names" type="text" autocomplete="name" required placeholder="Sara &amp; Omid" aria-describedby="f-names-help"></div>
+          <div class="field"><label for="f-email">Email <span class="field__req">(required)</span></label><input id="f-email" name="email" type="email" autocomplete="email" required></div>
         </div>
         <div class="form__row">
           <div class="field"><label for="f-phone">Phone</label><input id="f-phone" name="phone" type="tel" autocomplete="tel"></div>
@@ -239,14 +245,15 @@
         </div>
         <div class="field"><label for="f-message">Message</label><textarea id="f-message" name="message" placeholder="Your families, your dates, the rituals that matter most."></textarea></div>
         <div><button class="btn" type="submit">Begin the conversation</button></div>
-        <p class="form__note">Or call <a href="tel:+19252639949">(925) 263-9949</a> · <a href="mailto:hello@anarevents.com">hello@anarevents.com</a></p>
+        <p class="form__status" id="form-status" role="status" aria-live="polite" tabindex="-1" hidden></p>
+        <p class="form__note">Or call <a href="tel:+19252639949">(925) 263-9949</a> · <a href="https://wa.me/19252639949" rel="noopener">WhatsApp</a> · <a href="mailto:hello@anarevents.com">hello@anarevents.com</a></p>
       </form>
     </div>
   </section>
 
   <!-- 10. CTA band -->
   <!-- Static leaf band: the foot of the page content, above the CTA band -->
-  <div class="leaf-band" aria-hidden="true"><img src="assets/tree/painted/bottom-canopy.webp" width="2752" height="1536" alt="" loading="lazy" decoding="async"></div>
+  <div class="leaf-band" aria-hidden="true"><img src="assets/tree/painted/bottom-canopy.webp" srcset="assets/tree/painted/bottom-canopy-1400.webp 1400w, assets/tree/painted/bottom-canopy.webp 2752w" sizes="100vw" width="2752" height="1536" alt="" loading="lazy" decoding="async"></div>
 
   <!-- CTA bar ("Poster"): cream inset frame, wordmark on top, the Persian tagline sits inside the kashida line. -->
   <section class="cta cta--poster on-brown" id="cta" aria-labelledby="cta-title-a">
@@ -266,7 +273,7 @@
 </main>
 
 <footer class="site-footer on-brown">
-  <div class="ground-band" aria-hidden="true"><img src="assets/tree/painted/ground-bottom.webp" width="2752" height="1536" alt="" loading="lazy" decoding="async"></div>
+  <div class="ground-band" aria-hidden="true"><img src="assets/tree/painted/ground-bottom.webp" srcset="assets/tree/painted/ground-bottom-1400.webp 1400w, assets/tree/painted/ground-bottom.webp 2752w" sizes="100vw" width="2752" height="1536" alt="" loading="lazy" decoding="async"></div>
   <div class="container site-footer__inner">
     <div class="site-footer__grid">
       <div class="site-footer__brand">

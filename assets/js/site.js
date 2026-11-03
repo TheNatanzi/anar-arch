@@ -13,11 +13,13 @@
      (painted, transparent WebPs in assets/tree/painted/).
      Keys match data-layer="" attributes in the HTML.
      --------------------------------------------------------- */
+  var ART = 'assets/tree/painted/';
+  /* each layer: the file stem and the rendered width (sizes) so the browser picks the 1400px or the 2752px file */
   var TREE_LAYERS = {
-    leftBranch:   'assets/tree/painted/left-branch.webp',
-    rightBranch:  'assets/tree/painted/right-branch.webp',
-    cloud1:       'assets/tree/painted/cloud-1.webp',
-    cloud2:       'assets/tree/painted/cloud-2.webp'
+    leftBranch:   { file: 'left-branch',  sizes: '(min-width:1400px) 520px, 26vw' },
+    rightBranch:  { file: 'right-branch', sizes: '(min-width:1400px) 520px, 26vw' },
+    cloud1:       { file: 'cloud-1',      sizes: '120vw' },
+    cloud2:       { file: 'cloud-2',      sizes: '140vw' }
   };
   /* The leaf band (bottom-canopy.webp) and ground band (ground-bottom.webp) are static
      in-flow images in the HTML, so they never sit behind text. */
@@ -25,25 +27,111 @@
   /* Parallax speed per layer (fraction of the page's scroll distance).
      Positive = moves up as you scroll down. */
   var SPEED = { leftBranch: 0.06, rightBranch: 0.08 };
-  var BRANCH_MAX = 220;   /* px: branches drift up this much at most */
+  var BRANCH_MAX = function () { return Math.round(window.innerHeight * 0.4); };   /* px: branches drift up at most ~40vh */
 
   var html = document.documentElement;
   var body = document.body;
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var saveData = !!(navigator.connection && navigator.connection.saveData === true);
   var hasGsap = typeof window.gsap !== 'undefined' && typeof window.ScrollTrigger !== 'undefined';
   var motion = hasGsap && !reduced;
   var isDesktop = function () { return window.matchMedia('(min-width: 768px)').matches; };
+  var wideScreen = function () { return window.matchMedia('(min-width: 901px)').matches; };
   var $ = function (s, c) { return (c || document).querySelector(s); };
   var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
 
   html.classList.add(motion ? 'motion' : 'reduced');
   if (motion) { gsap.registerPlugin(ScrollTrigger); }
 
-  /* 0. Tree layer sources from the map (every page) */
+  /* 0. Tree layer sources from the map (every page): src + srcset (1400w, 2752w) + sizes */
   $$('[data-layer]').forEach(function (el) {
-    var key = el.getAttribute('data-layer');
-    if (TREE_LAYERS[key]) { el.src = TREE_LAYERS[key]; }
+    var layer = TREE_LAYERS[el.getAttribute('data-layer')];
+    if (!layer) { return; }
+    el.setAttribute('sizes', layer.sizes);
+    el.setAttribute('srcset', ART + layer.file + '-1400.webp 1400w, ' + ART + layer.file + '.webp 2752w');
+    el.src = ART + layer.file + '.webp';
   });
+
+  /* ---------------------------------------------------------
+     0b. Hero video (index): no src in the HTML. The loop mp4
+         (1080 from 901px, else 720; a <source media> attribute
+         is ignored inside <video>) is appended after window
+         'load', never under prefers-reduced-motion or Save-Data
+         unless the visitor presses Play. Plays only while the
+         tab is visible and the hero is on screen; pauses off
+         screen and on document.hidden. The "Pause video / Play
+         video" control sits in the header bar; aria-pressed
+         "true" means paused. The poster shows in every other case.
+     --------------------------------------------------------- */
+  var heroVideo = $('.hero__video');
+  var heroToggle = $('.hero-toggle');
+  var videoLoaded = false, videoFailed = false;
+  var userPaused = reduced || saveData;   /* starts on the poster when the visitor asked for less motion or data */
+  var heroVisible = function () {
+    if (!heroVideo || document.hidden) { return false; }
+    var r = heroVideo.getBoundingClientRect();
+    return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < window.innerHeight;
+  };
+  var playVideo = function () {
+    if (!heroVideo || videoFailed || userPaused || !heroVisible()) { return; }
+    var p = heroVideo.play();
+    if (p && p.catch) { p.catch(function () {}); }
+  };
+  var setToggle = function () {
+    if (!heroToggle) { return; }
+    heroToggle.setAttribute('aria-pressed', userPaused ? 'true' : 'false');
+    heroToggle.setAttribute('aria-label', userPaused ? 'Play video' : 'Pause video');
+  };
+  function loadHeroVideo() {
+    if (!heroVideo || videoLoaded || videoFailed || userPaused) { return; }
+    var src = heroVideo.getAttribute(wideScreen() ? 'data-src-desktop' : 'data-src-mobile');
+    if (!src) { return; }
+    videoLoaded = true;
+    var source = document.createElement('source');
+    source.type = 'video/mp4';
+    source.src = src;
+    var fallback = function () {   /* a missing file or a decode error: back to the poster, silently */
+      if (videoFailed) { return; }
+      videoFailed = true;
+      try { heroVideo.pause(); if (source.parentNode) { heroVideo.removeChild(source); } heroVideo.load(); } catch (e) { /* poster is showing */ }
+      if (heroToggle) { heroToggle.hidden = true; }
+    };
+    source.addEventListener('error', fallback);
+    heroVideo.addEventListener('error', fallback);
+    heroVideo.appendChild(source);
+    heroVideo.load();
+    playVideo();
+  }
+  if (heroVideo) {
+    if (!userPaused) {
+      if (document.readyState === 'complete') { loadHeroVideo(); }
+      else { window.addEventListener('load', loadHeroVideo, { once: true }); }
+    }
+    /* pause when the hero leaves the viewport; resume when it is back (if not paused by the visitor) */
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting && videoLoaded) { playVideo(); } else { heroVideo.pause(); }
+        });
+      }, { threshold: 0.05 }).observe(heroVideo);
+    }
+    document.addEventListener('visibilitychange', function () {
+      if (!videoLoaded) { return; }
+      if (document.hidden) { heroVideo.pause(); } else { playVideo(); }
+    });
+    if (heroToggle) {
+      setToggle();
+      heroToggle.addEventListener('click', function () {
+        userPaused = !userPaused;
+        setToggle();
+        if (userPaused) { heroVideo.pause(); }
+        else if (!videoLoaded) { loadHeroVideo(); }
+        else { playVideo(); }
+      });
+    }
+  } else if (heroToggle) {
+    heroToggle.hidden = true;
+  }
 
   /* ---------------------------------------------------------
      Smooth scroll (Lenis) wired to the GSAP ticker
@@ -56,10 +144,16 @@
     gsap.ticker.lagSmoothing(0);
     html.classList.add('lenis');
   }
-  function headerOffset() { return -($('.site-header') ? $('.site-header').offsetHeight : 0); }
+  function headerOffset() { return -($('.site-header') ? $('.site-header').offsetHeight + 8 : 0); }
+  /* focus moves to the destination (keyboard and screen-reader users continue from there) */
+  function focusEl(el) {
+    if (!el.hasAttribute('tabindex')) { el.setAttribute('tabindex', '-1'); }
+    try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
+  }
   function scrollToEl(el) {
     if (lenis) { lenis.scrollTo(el, { offset: headerOffset(), duration: 1.4 }); }
-    else { el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }); }
+    else { el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }); }   /* scroll-margin-top clears the header */
+    focusEl(el);
   }
   /* Same-page anchors (including "index.html#inquire" when on index) */
   $$('a[href*="#"]').forEach(function (a) {
@@ -108,14 +202,126 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeNav(); } });
   }
 
-  /* Hero video: pause when off screen (battery, CPU) */
-  var heroVideo = $('.hero__video');
-  if (heroVideo && 'IntersectionObserver' in window) {
-    new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting) { heroVideo.play().catch(function () {}); } else { heroVideo.pause(); }
+  /* ---------------------------------------------------------
+     5. Accordion panels (every mode: reduced motion, no GSAP):
+        hover expands (pointer devices), click / Enter / Space
+        and focus expand (touch, keyboard); arrow keys, Home and
+        End move between triggers. Stacked cards on phones. On
+        desktop a closed panel's body is inert and aria-hidden
+        (it is faded out), the open one is live.
+     --------------------------------------------------------- */
+  $$('[data-accordion]').forEach(function (acc) {
+    var panels = $$('.accordion__panel', acc);
+    var triggers = panels.map(function (p) { return $('.accordion__trigger', p); });
+    var hoverable = window.matchMedia('(hover: hover)').matches;
+    function syncBodies() {
+      panels.forEach(function (p) {
+        var bodyEl = $('.accordion__body', p);
+        if (!bodyEl) { return; }
+        var closed = isDesktop() && !p.classList.contains('is-open');
+        bodyEl.inert = closed;
+        if (closed) { bodyEl.setAttribute('aria-hidden', 'true'); } else { bodyEl.removeAttribute('aria-hidden'); }
       });
-    }, { threshold: 0.05 }).observe(heroVideo);
+    }
+    function open(target) {
+      panels.forEach(function (p, i) {
+        var on = p === target;
+        p.classList.toggle('is-open', on);
+        if (triggers[i]) { triggers[i].setAttribute('aria-expanded', on ? 'true' : 'false'); }
+      });
+      syncBodies();
+    }
+    panels.forEach(function (p, i) {
+      var btn = triggers[i];
+      if (hoverable) { p.addEventListener('mouseenter', function () { if (isDesktop()) { open(p); } }); }
+      if (!btn) { return; }
+      btn.addEventListener('click', function () { open(p); });
+      btn.addEventListener('focus', function () { if (isDesktop()) { open(p); } });
+      btn.addEventListener('keydown', function (e) {
+        var next = null;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { next = (i + 1) % triggers.length; }
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { next = (i - 1 + triggers.length) % triggers.length; }
+        else if (e.key === 'Home') { next = 0; }
+        else if (e.key === 'End') { next = triggers.length - 1; }
+        if (next === null || !triggers[next]) { return; }
+        e.preventDefault();
+        triggers[next].focus();
+        open(panels[next]);
+      });
+    });
+    syncBodies();
+    window.addEventListener('resize', syncBodies);
+  });
+
+  /* ---------------------------------------------------------
+     6. Inquiry form: posts to the Formspree action with fetch
+        (Accept: application/json); pending / sent / failed in the
+        role="status" region; 12 s timeout; the entered values
+        stay on every failure; the submit button is restored in
+        finally. Without fetch the form submits normally.
+     --------------------------------------------------------- */
+  var form = $('.form[data-ajax]');
+  if (form && window.fetch && window.FormData) {
+    var status = $('.form__status', form);
+    var submitBtn = $('button[type="submit"]', form);
+    var contactLinks = function () {   /* DOM nodes, no innerHTML */
+      var frag = document.createDocumentFragment();
+      var add = function (text, href) {
+        if (!href) { frag.appendChild(document.createTextNode(text)); return; }
+        var a = document.createElement('a');
+        a.href = href; a.textContent = text;
+        if (/^https?:/.test(href)) { a.rel = 'noopener'; }
+        frag.appendChild(a);
+      };
+      add(' write to '); add('hello@anarevents.com', 'mailto:hello@anarevents.com');
+      add(' or '); add('WhatsApp us', 'https://wa.me/19252639949'); add('.');
+      return frag;
+    };
+    var say = function (kind, text, links) {
+      if (!status) { return; }
+      status.hidden = false;
+      status.className = 'form__status is-' + kind;
+      status.textContent = text;
+      if (links) { status.appendChild(contactLinks()); }
+    };
+    var snapshot = function () {
+      try { return new URLSearchParams(new FormData(form)).toString(); } catch (err) { return null; }
+    };
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!form.checkValidity()) { form.reportValidity(); return; }
+      if (/FORMSPREE_ID/.test(form.action)) {
+        say('error', 'Online inquiries are not connected yet. Your entries are still here. Please', true);
+        if (status) { status.focus(); }
+        return;
+      }
+      if (submitBtn && submitBtn.disabled) { return; }
+      if (submitBtn) { submitBtn.disabled = true; }
+      say('wait', 'Sending…');
+      var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var timedOut = false, timer;
+      var timeout = new Promise(function (_, reject) {
+        timer = setTimeout(function () { timedOut = true; if (controller) { controller.abort(); } reject(new Error('timeout')); }, 12000);
+      });
+      var sent = snapshot();
+      var options = { method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' } };
+      if (controller) { options.signal = controller.signal; }
+      var request = Promise.race([timeout, Promise.resolve().then(function () { return fetch(form.action, options); })])
+        .then(function (r) { if (!r.ok) { throw new Error('bad status'); } })
+        .then(function () {
+          say('ok', 'Thank you. Your message is on its way; we reply within one business day.');
+          if (sent !== null && snapshot() === sent) { form.reset(); }   /* edits made while pending are kept */
+          if (status) { status.focus(); }
+        })
+        .catch(function () {
+          say('error', timedOut
+            ? 'The connection timed out, so we could not confirm delivery. Nothing you typed was lost: please try again in a moment, or'
+            : 'Your message did not send. Nothing you typed was lost: please try again, or', true);
+          if (status) { status.focus(); }
+        });
+      var done = function () { clearTimeout(timer); if (submitBtn) { submitBtn.disabled = false; } };
+      if (request.finally) { request.finally(done); } else { request.then(done, done); }
+    });
   }
 
   if (!motion) { return; }   /* ===== everything below is motion only ===== */
@@ -204,14 +410,16 @@
   var frame = $('.tree-frame');
   if (frame) {
     var scrollDist = function () { return Math.max(1, html.scrollHeight - window.innerHeight); };
-    $$('img[data-layer]', frame).forEach(function (el) {
+    $$('img[data-layer]', frame).forEach(function (el, i) {
       var s = SPEED[el.getAttribute('data-layer')];
       if (typeof s === 'undefined') { return; }
       gsap.to(el, {
-        y: function () { return Math.max(-scrollDist() * s, -BRANCH_MAX); },
+        y: function () { return Math.max(-scrollDist() * s, -BRANCH_MAX()); },
         ease: 'none',
         scrollTrigger: { trigger: body, start: 'top top', end: 'bottom bottom', scrub: true, invalidateOnRefresh: true }
       });
+      /* a slow 8s sway, +-1.2 degrees about the branch's root (CSS transform-origin); motion-only, so it never runs under reduced motion */
+      gsap.fromTo(el, { rotation: i % 2 ? 1.2 : -1.2 }, { rotation: i % 2 ? -1.2 : 1.2, duration: 8, ease: 'sine.inOut', yoyo: true, repeat: -1 });
     });
   }
 
@@ -250,31 +458,6 @@
     });
     dots.forEach(function (d, i) {
       tl.fromTo(d, { scale: 0 }, { scale: 1, ease: 'back.out(2)', duration: 0.06 }, (i + 0.5) / dots.length - 0.03);
-    });
-  });
-
-  /* ---------------------------------------------------------
-     5. Accordion panels: hover expands (pointer devices), click/
-        focus expands (touch, keyboard). Stacked cards on mobile.
-     --------------------------------------------------------- */
-  $$('[data-accordion]').forEach(function (acc) {
-    var panels = $$('.accordion__panel', acc);
-    var hoverable = window.matchMedia('(hover: hover)').matches;
-    function open(target) {
-      panels.forEach(function (p) {
-        var on = p === target;
-        p.classList.toggle('is-open', on);
-        var btn = $('.accordion__trigger', p);
-        if (btn) { btn.setAttribute('aria-expanded', on ? 'true' : 'false'); }
-      });
-    }
-    panels.forEach(function (p) {
-      var btn = $('.accordion__trigger', p);
-      if (hoverable) { p.addEventListener('mouseenter', function () { if (isDesktop()) { open(p); } }); }
-      if (btn) {
-        btn.addEventListener('click', function () { open(p); });
-        btn.addEventListener('focus', function () { if (isDesktop()) { open(p); } });
-      }
     });
   });
 
