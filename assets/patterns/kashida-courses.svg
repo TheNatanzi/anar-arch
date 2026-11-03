@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900">
+<title>Kashida courses: anar red lines on cream, spans 1:2:3:4</title>
+<defs><pattern id="k" width="1200" height="400" patternUnits="userSpaceOnUse">
+<g stroke="#9E1B32" stroke-linecap="butt">
+<line x1="25" y1="50" x2="375" y2="50" stroke-width="1.5"/>
+<line x1="425" y1="50" x2="575" y2="50" stroke-width="1.5"/>
+<line x1="625" y1="50" x2="875" y2="50" stroke-width="1.5"/>
+<line x1="925" y1="50" x2="975" y2="50" stroke-width="1.5"/>
+<line x1="1025" y1="50" x2="1175" y2="50" stroke-width="1.5"/>
+<line x1="25" y1="150" x2="175" y2="150" stroke-width="1.5"/>
+<line x1="225" y1="150" x2="275" y2="150" stroke-width="1.5"/>
+<line x1="325" y1="150" x2="675" y2="150" stroke-width="1.5"/>
+<line x1="725" y1="150" x2="975" y2="150" stroke-width="1.5"/>
+<line x1="1025" y1="150" x2="1175" y2="150" stroke-width="1.5"/>
+<line x1="25" y1="250" x2="275" y2="250" stroke-width="3"/>
+<line x1="325" y1="250" x2="675" y2="250" stroke-width="3"/>
+<line x1="725" y1="250" x2="875" y2="250" stroke-width="3"/>
+<line x1="925" y1="250" x2="975" y2="250" stroke-width="3"/>
+<line x1="1025" y1="250" x2="1175" y2="250" stroke-width="3"/>
+<line x1="25" y1="350" x2="75" y2="350" stroke-width="1.5"/>
+<line x1="125" y1="350" x2="375" y2="350" stroke-width="1.5"/>
+<line x1="425" y1="350" x2="575" y2="350" stroke-width="1.5"/>
+<line x1="625" y1="350" x2="975" y2="350" stroke-width="1.5"/>
+<line x1="1025" y1="350" x2="1175" y2="350" stroke-width="1.5"/>
+</g></pattern></defs>
+<rect width="1200" height="900" fill="#F0E6D5"/>
+<rect width="1200" height="900" fill="url(#k)"/>
+</svg>
