@@ -9,28 +9,23 @@
   'use strict';
 
   /* ---------------------------------------------------------
-     TREE LAYERS: the only place that knows the image files.
-     Swap the placeholder SVGs for the PNGs by editing this map.
+     TREE LAYERS: the only place that knows the image files
+     (painted, transparent WebPs in assets/tree/painted/).
      Keys match data-layer="" attributes in the HTML.
      --------------------------------------------------------- */
   var TREE_LAYERS = {
-    leftBranch:   'assets/tree/placeholder-left-branch.svg',
-    rightBranch:  'assets/tree/placeholder-right-branch.svg',
-    bottomCanopy: 'assets/tree/placeholder-bottom-canopy.svg',
-    trunkLeft:    'assets/tree/placeholder-trunk-left.svg',
-    trunkRight:   'assets/tree/placeholder-trunk-right.svg',
-    rootsBottom:  'assets/tree/placeholder-roots-bottom.svg',
-    groundBottom: 'assets/tree/placeholder-ground-bottom.svg',
-    cloud1:       'assets/tree/placeholder-cloud-1.svg',
-    cloud2:       'assets/tree/placeholder-cloud-2.svg'
+    leftBranch:   'assets/tree/painted/left-branch.webp',
+    rightBranch:  'assets/tree/painted/right-branch.webp',
+    bottomCanopy: 'assets/tree/painted/bottom-canopy.webp',
+    groundBottom: 'assets/tree/painted/ground-bottom.webp',   /* roots + ground in one painting */
+    cloud1:       'assets/tree/painted/cloud-1.webp',
+    cloud2:       'assets/tree/painted/cloud-2.webp'
   };
 
   /* Parallax speed per layer (fraction of the page's scroll distance).
-     Positive = moves up as you scroll down. Trunks are fastest, so the
-     page reads as descending the tree; roots and ground arrive last. */
+     Positive = moves up as you scroll down. The ground arrives last. */
   var SPEED = {
-    leftBranch: 0.06, rightBranch: 0.08, bottomCanopy: -0.02,
-    trunkLeft: 0.22, trunkRight: 0.25, rootsBottom: 0.22, groundBottom: 0.22
+    leftBranch: 0.06, rightBranch: 0.08, bottomCanopy: -0.02, groundBottom: 0.22
   };
   var BRANCH_MAX = 220;   /* px: branches drift up this much at most */
   var CANOPY_MAX = 60;    /* px: the bottom canopy sinks this much at most */
@@ -91,11 +86,14 @@
 
   /* ---------------------------------------------------------
      Header: solid once scrolled; mobile drawer
+     (on index with motion on, block 2 drives the solid state
+      from the wordmark morph instead of the 40px threshold)
      --------------------------------------------------------- */
   var header = $('.site-header');
   var navToggle = $('.nav-toggle');
+  var morphDrivesHeader = false;
   function onScrollState() {
-    if (!header) { return; }
+    if (!header || morphDrivesHeader) { return; }
     header.classList.toggle('is-scrolled', (window.scrollY || window.pageYOffset) > 40);
   }
   if (lenis) { lenis.on('scroll', onScrollState); } else { window.addEventListener('scroll', onScrollState, { passive: true }); }
@@ -126,8 +124,9 @@
   if (!motion) { return; }   /* ===== everything below is motion only ===== */
 
   /* ---------------------------------------------------------
-     1. Hero: the word blurs and rises slower than the page;
-     2. two cloud layers roll in from the bottom at different speeds;
+     1. Hero: the tagline fades (the wordmark is handled by the
+        morph in block 2);
+     2b. two cloud layers roll in from the bottom at different speeds;
         then the hero fades to cream.
      --------------------------------------------------------- */
   var hero = $('.hero');
@@ -136,7 +135,6 @@
       scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true }
     });
     heroTl
-      .to('.hero__word', { y: 140, filter: 'blur(12px)', opacity: 0, ease: 'none', duration: 1 }, 0)
       .to('.hero__tag', { opacity: 0, ease: 'none', duration: 0.5 }, 0)
       .fromTo('.hero__cloud--1', { yPercent: 35, opacity: 0 }, { yPercent: -55, opacity: 1, ease: 'none', duration: 1 }, 0)
       .fromTo('.hero__cloud--2', { yPercent: 55, opacity: 0 }, { yPercent: -30, opacity: 1, ease: 'none', duration: 1 }, 0)
@@ -144,9 +142,68 @@
   }
 
   /* ---------------------------------------------------------
+     2. Wordmark morph: the hero wordmark travels up and shrinks
+        into the header's logo slot over the first 70% of the hero
+        (one scrubbed transform: translate + scale, measured with
+        getBoundingClientRect at build and on every refresh).
+        At the end it is swapped for the header logo (same artwork,
+        same box); scrolling back up reverses it.
+     --------------------------------------------------------- */
+  var morph = $('.logo-morph');
+  var heroWordImg = $('.hero__word img');
+  var headerLogoBox = $('.site-logo');   /* the anchor: always laid out (visibility hidden until docked) */
+  if (hero && morph && heroWordImg && headerLogoBox && header) {
+    var MORPH_END = 0.7;   /* fraction of the hero height */
+    var from = { x: 0, y: 0, w: 1 }, to = { x: 0, y: 0, w: 1 };
+    function measure() {
+      /* hero wordmark in document coordinates (the hero sits at the top of the page) */
+      var sy = window.scrollY || window.pageYOffset;
+      var h = heroWordImg.getBoundingClientRect();
+      from = { x: h.left, y: h.top + sy, w: h.width };
+      /* header logo box in viewport coordinates (the header is fixed) */
+      var l = headerLogoBox.getBoundingClientRect();
+      to = { x: l.left, y: l.top, w: l.width };
+      morph.style.width = from.w + 'px';
+      morph.style.height = (from.w * 552 / 1600) + 'px';
+    }
+    var docked = null;   /* null: not yet applied, so the first call always sets the classes */
+    function setDocked(on) {
+      if (on === docked) { return; }
+      docked = on;
+      header.classList.toggle('logo-docked', on);
+      header.classList.toggle('is-scrolled', on);
+      morph.classList.toggle('is-on', !on);
+    }
+    morphDrivesHeader = true;
+    measure();
+    morph.classList.add('is-built');   /* hides the in-flow hero wordmark for good; the morph layer draws it */
+    morph.classList.add('is-on');
+    var cream = getComputedStyle(html).getPropertyValue('--cream').trim() || '#F0E6D5';
+    var brown = getComputedStyle(html).getPropertyValue('--brown').trim() || '#432617';
+    var morphTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: hero, start: 'top top',
+        end: function () { return '+=' + Math.round(hero.offsetHeight * MORPH_END); },
+        scrub: true, invalidateOnRefresh: true,
+        onRefreshInit: measure,
+        onUpdate: function (st) { setDocked(st.progress >= 1); },
+        onRefresh: function (st) { setDocked(st.progress >= 1); }
+      }
+    });
+    morphTl
+      .fromTo(morph,
+        { x: function () { return from.x; }, y: function () { return from.y; }, scale: 1 },
+        { x: function () { return to.x; }, y: function () { return to.y; }, scale: function () { return to.w / from.w; }, ease: 'none', duration: 1 }, 0)
+      /* last stretch: the wordmark turns red as the header bar turns cream beneath it */
+      .to('.logo-morph__cream', { opacity: 0, ease: 'none', duration: 0.2 }, 0.8)
+      .to('.logo-morph__red', { opacity: 1, ease: 'none', duration: 0.2 }, 0.8)
+      .fromTo(header, { backgroundColor: 'rgba(240,230,213,0)', color: cream }, { backgroundColor: cream, color: brown, ease: 'none', duration: 0.2 }, 0.8);
+  }
+
+  /* ---------------------------------------------------------
      3. Tree frame parallax (every page): edge layers at different
-        speeds; trunks slide up along the edges; roots and ground
-        are placed so they land at the foot of the page.
+        speeds; the ground band is placed so it lands at the foot
+        of the page.
      --------------------------------------------------------- */
   var frame = $('.tree-frame');
   if (frame) {
@@ -156,21 +213,9 @@
 
     function layoutTree() {
       var D = scrollDist(), vh = window.innerHeight;
-      var T = D * SPEED.rootsBottom;           /* travel of the roots/ground group */
-      var roots = layer.rootsBottom, ground = layer.groundBottom;
-      var rootsH = roots ? roots.offsetHeight : 0, groundH = ground ? ground.offsetHeight : 0;
-      var groundTop0 = vh - groundH + T;       /* lands at the bottom edge at page end */
-      var rootsTop0 = groundTop0 - rootsH + Math.round(groundH * 0.35);
-      if (ground) { ground.style.top = groundTop0 + 'px'; }
-      if (roots) { roots.style.top = rootsTop0 + 'px'; }
-      /* trunks: tall enough to reach the roots when everything has travelled */
-      ['trunkLeft', 'trunkRight'].forEach(function (k) {
-        var t = layer[k]; if (!t) { return; }
-        var top0 = t.offsetTop;
-        var rootsTopEnd = rootsTop0 - T;
-        var h = rootsTopEnd + 40 - (top0 - D * SPEED[k]);
-        t.style.height = Math.max(vh * 1.2, h) + 'px';
-      });
+      var T = D * SPEED.groundBottom;          /* travel of the ground band */
+      var ground = layer.groundBottom;
+      if (ground) { ground.style.top = (vh - ground.offsetHeight + T) + 'px'; }   /* lands at the bottom edge at page end */
     }
     ScrollTrigger.addEventListener('refreshInit', layoutTree);
     layoutTree();
@@ -255,24 +300,6 @@
   });
 
   /* ---------------------------------------------------------
-     6. Curtain: three cream strips with red kashida edges slide
-        over the photo from the right, then the two cards slide in
-        over the Termeh weave.
-     --------------------------------------------------------- */
-  var curtain = $('.curtain');
-  if (curtain) {
-    var strips = $$('.curtain__strips i', curtain);
-    var cards = $('.curtain__cards', curtain);
-    var cTl = gsap.timeline({
-      scrollTrigger: { trigger: curtain, start: 'top top', end: 'bottom bottom', scrub: true }
-    });
-    /* CSS parks strips and cards at translateX(102%); GSAP takes over with explicit values */
-    cTl.fromTo(strips, { xPercent: 102, x: 0 }, { xPercent: 0, x: 0, ease: 'power1.inOut', duration: 0.4, stagger: 0.12 }, 0.05)
-       .to('.curtain__title', { opacity: 0, ease: 'none', duration: 0.2 }, 0.25)
-       .fromTo(cards, { xPercent: 102, x: 0 }, { xPercent: 0, x: 0, ease: 'power2.out', duration: 0.4 }, 0.55);
-  }
-
-  /* ---------------------------------------------------------
      9. Section reveals (fade + rise, 0.9s ease-out), once;
      10. images scale 1.02 -> 1 on reveal; .stagger children stagger.
      --------------------------------------------------------- */
@@ -295,51 +322,6 @@
       scrollTrigger: { trigger: group, start: 'top 88%', once: true }
     });
   });
-
-  /* ---------------------------------------------------------
-     8. "How we work +" slide-out panel (amber tab, cream panel,
-        close button, Esc closes, backdrop closes, basic focus trap)
-     --------------------------------------------------------- */
-  var tab = $('.hww-tab'), panel = $('#hww-panel'), backdrop = $('.hww-backdrop');
-  if (tab && panel && backdrop) {
-    var closeBtn = $('.hww-panel__close', panel);
-    var lastFocus = null;
-    var focusables = function () {
-      return $$('a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])', panel);
-    };
-    function openPanel() {
-      lastFocus = document.activeElement;
-      panel.hidden = false; backdrop.hidden = false;
-      requestAnimationFrame(function () { panel.classList.add('is-open'); backdrop.classList.add('is-on'); });
-      tab.setAttribute('aria-expanded', 'true');
-      body.classList.add('panel-open');
-      if (lenis) { lenis.stop(); }
-      setTimeout(function () { (closeBtn || panel).focus(); }, 80);
-    }
-    function closePanel() {
-      panel.classList.remove('is-open'); backdrop.classList.remove('is-on');
-      tab.setAttribute('aria-expanded', 'false');
-      body.classList.remove('panel-open');
-      if (lenis) { lenis.start(); }
-      setTimeout(function () { panel.hidden = true; backdrop.hidden = true; }, 560);
-      if (lastFocus && lastFocus.focus) { lastFocus.focus(); }
-    }
-    tab.addEventListener('click', openPanel);
-    if (closeBtn) { closeBtn.addEventListener('click', closePanel); }
-    backdrop.addEventListener('click', closePanel);
-    document.addEventListener('keydown', function (e) {
-      if (panel.hidden) { return; }
-      if (e.key === 'Escape') { closePanel(); return; }
-      if (e.key === 'Tab') {
-        var f = focusables(); if (!f.length) { return; }
-        var first = f[0], last = f[f.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-      }
-    });
-    /* links inside the panel close it first */
-    $$('a[href]', panel).forEach(function (a) { a.addEventListener('click', function () { closePanel(); }); });
-  }
 
   /* Refresh triggers once fonts and images have settled */
   window.addEventListener('load', function () { ScrollTrigger.refresh(); });

@@ -24,18 +24,12 @@
 <body class="page-index">
 <a class="skip-link" href="#main">Skip to content</a>
 
-<!-- Brand grid hairlines: 12 columns desktop, 4 mobile -->
-<div class="hairlines" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-
-<!-- The pomegranate tree frames the page: left, right and bottom only. Sources come from TREE_LAYERS in site.js -->
+<!-- The pomegranate branches frame the page: left, right and bottom only (painted WebPs; sources come from TREE_LAYERS in site.js) -->
 <div class="tree-frame" aria-hidden="true">
-  <img data-layer="leftBranch" width="1600" height="900" alt="" loading="lazy" decoding="async">
-  <img data-layer="rightBranch" width="1600" height="900" alt="" loading="lazy" decoding="async">
-  <img data-layer="trunkLeft" width="1200" height="4800" alt="" loading="lazy" decoding="async">
-  <img data-layer="trunkRight" width="1200" height="4800" alt="" loading="lazy" decoding="async">
-  <img data-layer="rootsBottom" width="1600" height="800" alt="" loading="lazy" decoding="async">
-  <img data-layer="groundBottom" width="1600" height="500" alt="" loading="lazy" decoding="async">
-  <img data-layer="bottomCanopy" width="1600" height="500" alt="" loading="lazy" decoding="async">
+  <img data-layer="leftBranch" width="2752" height="1536" alt="" loading="lazy" decoding="async">
+  <img data-layer="rightBranch" width="2752" height="1536" alt="" loading="lazy" decoding="async">
+  <img data-layer="groundBottom" width="2752" height="1536" alt="" loading="lazy" decoding="async">
+  <img data-layer="bottomCanopy" width="2752" height="1536" alt="" loading="lazy" decoding="async">
 </div>
 
 <header class="site-header site-header--over">
@@ -56,6 +50,12 @@
   </div>
 </header>
 
+<!-- Wordmark morph layer: the hero wordmark travels up into the header's logo slot (positioned by site.js) -->
+<div class="logo-morph" aria-hidden="true">
+  <img class="logo-morph__cream" src="assets/logo/logo-cream.svg" width="1600" height="552" alt="">
+  <img class="logo-morph__red" src="assets/logo/logo-red.svg" width="1600" height="552" alt="">
+</div>
+
 <main id="main">
 
   <!-- 1. Hero: looping video seen through the mirror window; the word is the logo -->
@@ -66,8 +66,8 @@
     </video>
     <div class="hero__shade" aria-hidden="true"></div>
     <div class="hero__window" aria-hidden="true"></div>
-    <img class="hero__cloud hero__cloud--2" data-layer="cloud2" width="1600" height="700" alt="" aria-hidden="true">
-    <img class="hero__cloud hero__cloud--1" data-layer="cloud1" width="1600" height="700" alt="" aria-hidden="true">
+    <img class="hero__cloud hero__cloud--2" data-layer="cloud2" width="2752" height="1536" alt="" aria-hidden="true">
+    <img class="hero__cloud hero__cloud--1" data-layer="cloud1" width="2752" height="1536" alt="" aria-hidden="true">
     <h1 class="hero__word"><img src="assets/logo/logo-cream.svg" width="1600" height="552" alt="Anar Events"></h1>
     <p class="hero__tag"><span class="fa" lang="fa" dir="rtl">جشن خانوادهٔ شما، به روش خودتان</span> · Timeless traditions, curated for the modern era.</p>
     <div class="hero__fade" aria-hidden="true"></div>
@@ -131,7 +131,7 @@
           </div>
         </article>
         <article class="accordion__panel">
-          <div class="accordion__media accordion__media--pattern"></div>
+          <div class="accordion__media"></div>
           <button class="accordion__trigger" type="button" aria-expanded="false"><span class="visually-hidden">Show Nikah</span></button>
           <span class="accordion__label" aria-hidden="true">Nikah</span>
           <div class="accordion__body">
@@ -173,31 +173,6 @@
         <svg class="signature kashida-draw" viewBox="0 0 180 60" aria-hidden="true" focusable="false"><path d="M8 44 C 10 20, 16 6, 20 10 C 24 16, 18 40, 26 42 C 34 44, 30 18, 38 14 C 46 10, 44 34, 50 40 C 60 50, 70 22, 80 26 C 90 30, 84 44, 94 42 C 104 40, 102 24, 112 24 C 122 24, 118 40, 128 40 C 140 40, 146 18, 150 10 C 154 2, 144 28, 150 42 C 156 56, 166 30, 172 34"/></svg>
         <figcaption>Medi, founder</figcaption>
       </figure>
-    </div>
-  </section>
-
-  <!-- 8. How we work teaser: curtain strips, then two cards over the Termeh weave -->
-  <section class="curtain" id="how-teaser" aria-labelledby="how-teaser-title">
-    <div class="curtain__stage">
-      <img class="curtain__photo" src="assets/img/pom-pile.jpg" width="1411" height="2000" alt="" loading="lazy" decoding="async">
-      <div class="curtain__dim" aria-hidden="true"></div>
-      <h2 class="curtain__title" id="how-teaser-title">How we work</h2>
-      <div class="curtain__strips" aria-hidden="true"><i></i><i></i><i></i></div>
-      <div class="curtain__cards">
-        <div class="curtain__grid">
-          <article class="card">
-            <span class="card__n">01 · <span class="fa" lang="fa" dir="rtl">برنامه</span></span>
-            <h3>Plan</h3>
-            <p>We learn your rituals before we meet you. Then one plan, in both languages, with the price and what is included, and a written summary after every meeting.</p>
-          </article>
-          <article class="card">
-            <span class="card__n">02 · <span class="fa" lang="fa" dir="rtl">روز عروسی</span></span>
-            <h3>Run the day</h3>
-            <p>The timeline called with the venue and vendors. Elders' seats held, the sofreh laid against the key, staff in brown and easy to find. You only have to be there.</p>
-          </article>
-        </div>
-        <p class="curtain__coords">37.77° N · 122.42° W · San Francisco Bay Area · <a class="link-arrow" href="how-we-work.html">All five steps</a></p>
-      </div>
     </div>
   </section>
 
@@ -299,22 +274,5 @@
     <p class="site-footer__legal"><span>© 2026 Anar LLC. Persian, Afghan and South Asian weddings.</span><span>Timeless traditions, curated for the modern era.</span></p>
   </div>
 </footer>
-
-<!-- 11. Persistent "How we work +" tab and slide-out panel -->
-<button class="hww-tab" type="button" aria-controls="hww-panel" aria-expanded="false">How we work <span aria-hidden="true">+</span></button>
-<div class="hww-backdrop" hidden></div>
-<aside class="hww-panel" id="hww-panel" role="dialog" aria-modal="true" aria-labelledby="hww-title" tabindex="-1" hidden>
-  <button class="hww-panel__close" type="button" aria-label="Close"><span aria-hidden="true">×</span></button>
-  <p class="eyebrow">How we work · <span class="fa" lang="fa" dir="rtl">روش کار ما</span></p>
-  <h2 id="hww-title">Five steps, one line</h2>
-  <ol class="hww-steps">
-    <li><div><h3>Enquiry &amp; consultation</h3><p>Write to us. We meet your family, greet the elders first, and listen.</p></div></li>
-    <li><div><h3>Proposal</h3><p>The plan, the price, and what is included. A page for the parents, in Persian or Dari.</p></div></li>
-    <li><div><h3>Planning</h3><p>Ritual by ritual, in both languages. A short written summary after every meeting.</p></div></li>
-    <li><div><h3>The wedding days</h3><p>Khastegari, aghd or nikah, mehndi, reception or walima: one timeline, one person to call.</p></div></li>
-    <li><div><h3>Thank-you</h3><p>What the family keeps, and how we say goodbye.</p></div></li>
-  </ol>
-  <p><a class="btn" href="index.html#inquire">Begin the conversation</a> &nbsp; <a class="link-arrow" href="how-we-work.html">Read more</a></p>
-</aside>
 </body>
 </html>
