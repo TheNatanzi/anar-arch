@@ -122,6 +122,126 @@
   },
   {
    "page": "index.html",
+   "view": "w1024",
+   "scroll": 0,
+   "file": "index-w1024-0.jpg"
+  },
+  {
+   "page": "index.html",
+   "view": "w1024",
+   "scroll": 0.22,
+   "file": "index-w1024-1.jpg"
+  },
+  {
+   "page": "index.html",
+   "view": "w1024",
+   "scroll": 0.45,
+   "file": "index-w1024-2.jpg"
+  },
+  {
+   "page": "index.html",
+   "view": "w1024",
+   "scroll": 0.68,
+   "file": "index-w1024-3.jpg"
+  },
+  {
+   "page": "index.html",
+   "view": "w1024",
+   "scroll": 0.92,
+   "file": "index-w1024-4.jpg"
+  },
+  {
+   "page": "weddings.html",
+   "view": "w1024",
+   "scroll": 0,
+   "file": "weddings-w1024-0.jpg"
+  },
+  {
+   "page": "weddings.html",
+   "view": "w1024",
+   "scroll": 0.22,
+   "file": "weddings-w1024-1.jpg"
+  },
+  {
+   "page": "weddings.html",
+   "view": "w1024",
+   "scroll": 0.45,
+   "file": "weddings-w1024-2.jpg"
+  },
+  {
+   "page": "weddings.html",
+   "view": "w1024",
+   "scroll": 0.68,
+   "file": "weddings-w1024-3.jpg"
+  },
+  {
+   "page": "weddings.html",
+   "view": "w1024",
+   "scroll": 0.92,
+   "file": "weddings-w1024-4.jpg"
+  },
+  {
+   "page": "how-we-work.html",
+   "view": "w1024",
+   "scroll": 0,
+   "file": "how-we-work-w1024-0.jpg"
+  },
+  {
+   "page": "how-we-work.html",
+   "view": "w1024",
+   "scroll": 0.22,
+   "file": "how-we-work-w1024-1.jpg"
+  },
+  {
+   "page": "how-we-work.html",
+   "view": "w1024",
+   "scroll": 0.45,
+   "file": "how-we-work-w1024-2.jpg"
+  },
+  {
+   "page": "how-we-work.html",
+   "view": "w1024",
+   "scroll": 0.68,
+   "file": "how-we-work-w1024-3.jpg"
+  },
+  {
+   "page": "how-we-work.html",
+   "view": "w1024",
+   "scroll": 0.92,
+   "file": "how-we-work-w1024-4.jpg"
+  },
+  {
+   "page": "about.html",
+   "view": "w1024",
+   "scroll": 0,
+   "file": "about-w1024-0.jpg"
+  },
+  {
+   "page": "about.html",
+   "view": "w1024",
+   "scroll": 0.22,
+   "file": "about-w1024-1.jpg"
+  },
+  {
+   "page": "about.html",
+   "view": "w1024",
+   "scroll": 0.45,
+   "file": "about-w1024-2.jpg"
+  },
+  {
+   "page": "about.html",
+   "view": "w1024",
+   "scroll": 0.68,
+   "file": "about-w1024-3.jpg"
+  },
+  {
+   "page": "about.html",
+   "view": "w1024",
+   "scroll": 0.92,
+   "file": "about-w1024-4.jpg"
+  },
+  {
+   "page": "index.html",
    "view": "phone",
    "scroll": 0,
    "file": "index-phone-0.jpg"

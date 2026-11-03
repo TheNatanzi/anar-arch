@@ -38,6 +38,9 @@
   var onMQ = function (mq, fn) { if (mq.addEventListener) { mq.addEventListener('change', fn); } else if (mq.addListener) { mq.addListener(fn); } };
   var rmq = window.matchMedia('(prefers-reduced-motion: reduce)');
   var desktopQuery = window.matchMedia('(min-width: 768px)');
+  /* the bar's three columns (links, logo, Inquire + Pause) only fit without wrapping from 1024px; below it the links
+     sit in the drawer (site.css: the same 1023.98px query) */
+  var navQuery = window.matchMedia('(min-width: 1024px)');
   var reduced = rmq.matches;
   var saveData = !!(navigator.connection && navigator.connection.saveData === true);
   var hasGsap = typeof window.gsap !== 'undefined' && typeof window.ScrollTrigger !== 'undefined';
@@ -75,13 +78,31 @@
   var canMotion = function () { return hasGsap && !reduced && !userPaused; };
   /* html.paused: anchors jump at once and the celebrations strip opens without its transitions (site.css) */
   var syncPaused = function () { html.classList.toggle('paused', userPaused); };
-  html.classList.add(canMotion() ? 'motion' : 'reduced');
+  /* html.motion is set by each page's head script before the stylesheet paints (reduced motion and a saved Pause are
+     read there), so nothing flashes; here it is only taken away when motion cannot run after all (no GSAP, Save-Data).
+     html.motion-ready ends the CSS no-script fallback (site.css) */
+  if (!canMotion()) { html.classList.remove('motion'); html.classList.add('reduced'); }
+  html.classList.add('motion-ready');
   syncPaused();
   if (hasGsap) { gsap.registerPlugin(ScrollTrigger); }
 
+  /* one resize listener, throttled to a frame; each block registers its handler in onResize */
+  var resizeFns = [];
+  var onResize = function (fn) { resizeFns.push(fn); };
+  var resizeRaf = 0;
+  window.addEventListener('resize', function () {
+    if (resizeRaf) { return; }
+    resizeRaf = requestAnimationFrame(function () { resizeRaf = 0; resizeFns.forEach(function (fn) { fn(); }); });
+  }, { passive: true });
+  /* --sbw: the scrollbar's width, so the fixed branches' mask (site.css .tree-frame) measures the page, not 100vw */
+  var setSbw = function () { html.style.setProperty('--sbw', Math.max(0, window.innerWidth - html.clientWidth) + 'px'); };
+  setSbw();
+  onResize(setSbw);
+  window.addEventListener('load', setSbw);
+
   /* 0. Tree layer sources from the map (every page): src + srcset (700w, 1400w, 2752w) + sizes.
-        The clouds only move (hero scroll timeline), so they are requested once motion is built; the right branch is
-        display:none on phones, so it loads only from 768px. */
+        The clouds only move (hero scroll timeline), so they are requested once motion is built; the branches are
+        display:none on phones, so they load only from 768px. */
   var layerSrc = function (el) {
     var layer = TREE_LAYERS[el.getAttribute('data-layer')];
     if (!layer || el.getAttribute('srcset')) { return; }
@@ -93,7 +114,7 @@
     $$('[data-layer]').forEach(function (el) {
       var key = el.getAttribute('data-layer');
       if (key === 'cloud1' || key === 'cloud2') { return; }   /* loaded by buildMotion */
-      if (key === 'rightBranch' && !isDesktop()) { return; }
+      if ((key === 'leftBranch' || key === 'rightBranch') && !isDesktop()) { return; }   /* no branches on phones (site.css) */
       layerSrc(el);
     });
   };
@@ -101,7 +122,7 @@
   onMQ(desktopQuery, function (e) { if (e.matches) { loadLayers(); } });
 
   /* ---------------------------------------------------------
-     0b. Hero video (index): no src in the HTML. The loop mp4
+     0b. Hero video (index): no src in the HTML. The full mp4
          (1080 only from 1280px wide at DPR >= 1.5, else 720; a <source media>
          attribute is ignored inside <video>) is appended after window
          'load', never under prefers-reduced-motion or Save-Data
@@ -192,6 +213,7 @@
   function stopLenis() {
     if (!lenis) { return; }
     gsap.ticker.remove(lenisTick);
+    gsap.ticker.lagSmoothing(500, 33);   /* GSAP's default, set to 0 by startLenis */
     lenis.destroy();
     lenis = null;
     html.classList.remove('lenis');
@@ -241,7 +263,7 @@
      toggle is wired (html.nav-ready) do they collapse into the
      drawer. Escape closes and returns focus to the toggle; a
      click outside the header, focus leaving the header, or the
-     viewport growing past 768px closes it; the collapsed drawer
+     viewport growing past 1024px closes it; the collapsed drawer
      is aria-hidden; Lenis stops while it is open.
      --------------------------------------------------------- */
   var navToggle = $('.nav-toggle');
@@ -255,7 +277,7 @@
   onScrollState();
   function syncNav() {
     if (!header || !navToggle || !nav) { return; }
-    var phone = !isDesktop();
+    var phone = !navQuery.matches;
     var open = header.classList.contains('nav-open');
     if (open && !phone) { header.classList.remove('nav-open'); open = false; }
     navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -282,8 +304,8 @@
     header.addEventListener('focusout', function (e) {
       if (header.classList.contains('nav-open') && e.relatedTarget && !header.contains(e.relatedTarget)) { closeNav(); }
     });
-    onMQ(desktopQuery, function (e) { if (e.matches) { closeNav(); } else { syncNav(); } });
-    window.addEventListener('resize', syncNav, { passive: true });
+    onMQ(navQuery, function (e) { if (e.matches) { closeNav(); } else { syncNav(); } });
+    onResize(syncNav);
     syncNav();
     html.classList.add('nav-ready');   /* only now do the links collapse into the drawer (CSS) */
   }
@@ -297,12 +319,23 @@
         body shown, so the overlay triggers are hidden there (out
         of the tab order; back on the strip). On the strip a
         closed panel's body is inert and aria-hidden (it is faded
-        out), the open one is live.
+        out), the open one is live. Hover opens after 80ms (a
+        pass across the strip opens nothing); a focus that comes
+        from a click does not open twice. The strip CSS applies
+        only once all this is wired (.accordion-ready). When an
+        expansion settles, ScrollTrigger re-measures the page.
      --------------------------------------------------------- */
   $$('[data-accordion]').forEach(function (acc) {
     var panels = $$('.accordion__panel', acc);
     var triggers = panels.map(function (p) { return $('.accordion__trigger', p); });
     var hoverable = window.matchMedia('(hover: hover)').matches;
+    var hoverTimer = 0, settleTimer = 0, pointerFocus = false;
+    /* the strip's height follows the open body: re-measure every trigger below once the .7s flex transition has
+       settled (at once while paused: no transition) */
+    function settle() {
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(function () { if (hasGsap) { ScrollTrigger.refresh(); } }, html.classList.contains('paused') ? 50 : 760);
+    }
     function syncBodies() {
       var stacked = !isStrip();
       panels.forEach(function (p, i) {
@@ -315,19 +348,32 @@
       });
     }
     function open(target) {
+      if (target.classList.contains('is-open')) { return; }
       panels.forEach(function (p, i) {
         var on = p === target;
         p.classList.toggle('is-open', on);
         if (triggers[i]) { triggers[i].setAttribute('aria-expanded', on ? 'true' : 'false'); }
       });
       syncBodies();
+      if (isStrip()) { settle(); }
     }
     panels.forEach(function (p, i) {
       var btn = triggers[i];
-      if (hoverable) { p.addEventListener('mouseenter', function () { if (isStrip()) { open(p); } }); }
+      if (hoverable) {
+        p.addEventListener('mouseenter', function () {
+          clearTimeout(hoverTimer);
+          hoverTimer = setTimeout(function () { if (isStrip()) { open(p); } }, 80);
+        });
+        p.addEventListener('mouseleave', function () { clearTimeout(hoverTimer); });
+      }
       if (!btn) { return; }
-      btn.addEventListener('click', function () { open(p); });
-      btn.addEventListener('focus', function () { if (isStrip()) { open(p); } });
+      btn.addEventListener('pointerdown', function () { pointerFocus = true; });
+      btn.addEventListener('pointercancel', function () { pointerFocus = false; });
+      btn.addEventListener('click', function () { pointerFocus = false; open(p); });
+      btn.addEventListener('focus', function () {
+        if (pointerFocus) { pointerFocus = false; return; }   /* the click that follows opens it */
+        if (isStrip()) { open(p); }
+      });
       btn.addEventListener('keydown', function (e) {
         var next = null;
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { next = (i + 1) % triggers.length; }
@@ -341,8 +387,9 @@
       });
     });
     syncBodies();
-    onMQ(stripQuery, syncBodies);
-    window.addEventListener('resize', syncBodies);
+    onMQ(stripQuery, function () { syncBodies(); settle(); });
+    onResize(syncBodies);
+    acc.classList.add('accordion-ready');   /* only now does the strip layout apply (site.css) */
   });
 
   /* ---------------------------------------------------------
@@ -415,7 +462,12 @@
       if (form.checkValidity()) { return; }   /* fires `invalid` on each failing control (flagged above) */
       e.preventDefault();
       var first = $('[aria-invalid="true"]', form);
-      if (first) { first.focus(); }
+      if (!first) { return; }
+      /* its whole field (label included) lands a full 24px below the bar (site.css scroll-margin-top) */
+      var spot = first.closest('.field') || first;
+      if (lenis) { lenis.scrollTo(spot, { offset: headerOffset(spot), duration: 0.8 }); }
+      else { spot.scrollIntoView({ behavior: (reduced || userPaused) ? 'auto' : 'smooth', block: 'start' }); }
+      try { first.focus({ preventScroll: true }); } catch (err) { first.focus(); }
     });
   }
   if (form && window.fetch && window.FormData) {
@@ -587,7 +639,6 @@
         };
         morphDrivesHeader = true;
         measure();
-        morph.classList.add('is-built');   /* hides the in-flow hero wordmark while motion is on; the morph layer draws it */
         morph.classList.add('is-on');
         var cream = getComputedStyle(html).getPropertyValue('--cream').trim() || '#F0E6D5';
         var brown = getComputedStyle(html).getPropertyValue('--brown').trim() || '#432617';
@@ -609,6 +660,9 @@
           .to('.logo-morph__cream', { opacity: 0, ease: 'none', duration: 0.2 }, 0.8)
           .to('.logo-morph__red', { opacity: 1, ease: 'none', duration: 0.2 }, 0.8)
           .fromTo(header, { backgroundColor: 'rgba(240,230,213,0)', color: cream }, { backgroundColor: cream, color: brown, ease: 'none', duration: 0.2 }, 0.8);
+        /* the timeline has placed the layer on the in-flow <h1>; in the next frame the layer shows and the <h1> hides
+           together (site.css: both hang on .is-built), so the wordmark never blinks or doubles */
+        requestAnimationFrame(function () { if (motionOn && ctx) { morph.classList.add('is-built'); } });
       }
 
       /* ---------------------------------------------------------

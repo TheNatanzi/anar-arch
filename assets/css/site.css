@@ -31,6 +31,7 @@
   --narrow:760px;
   --gutter:48px;
   --header-h:64px;
+  --sbw:0px;            /* the scrollbar width (site.js: innerWidth - clientWidth) */
   --ease:cubic-bezier(.22,.61,.36,1);
   --dur:.9s;
 }
@@ -81,7 +82,8 @@ h3{font-size:clamp(22px,2.6vw,26px);line-height:1.2}
 .muted{color:var(--muted)}
 
 /* ---------- Layout ---------- */
-.container{width:100%;max-width:var(--container);margin-inline:auto;padding-inline:var(--gutter)}
+/* one calculation for every container: max-width = the content width + both gutters (padding inside the max-width) */
+.container{width:100%;max-width:calc(var(--container) + 2*var(--gutter));margin-inline:auto;padding-inline:var(--gutter)}
 .container--narrow{max-width:calc(var(--narrow) + 2*var(--gutter))}
 .container--text{max-width:calc(var(--narrow) + 2*var(--gutter))}
 main{position:relative;z-index:2}
@@ -99,6 +101,16 @@ main{position:relative;z-index:2}
 }
 
 /* ---------- Devices ---------- */
+/* Section divider (owner's option A, "kashida + seed"): where two home sections of text meet with no image between them.
+   A centred 2px red kashida that fades out at both ends, with a red seed at its centre ringed by the page ground.
+   Decorative (aria-hidden); it sits in the top padding of the section it opens (.section--divided). */
+.section.section--divided{padding-top:clamp(120px,16vh,180px)}
+.divider{position:absolute;left:50%;top:clamp(48px,7vh,72px);width:min(520px,60vw);height:2px;transform:translate(-50%,-50%);background:linear-gradient(to right,transparent,var(--red) 18%,var(--red) 82%,transparent);pointer-events:none}
+.divider__seed{position:absolute;left:50%;top:50%;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;background:var(--red);box-shadow:0 0 0 6px var(--cream)}
+@media (max-width:767.98px){
+  .divider{width:70vw}
+  .divider__seed{width:16px;height:16px;margin:-8px 0 0 -8px}
+}
 /* The kashida line */
 .rule{height:2px;background:var(--red);width:100%;border:0;margin:0}
 .rule--4{height:4px}
@@ -138,11 +150,12 @@ main{position:relative;z-index:2}
 .logo-morph img{position:absolute;left:0;top:0;width:100%;height:auto}
 .logo-morph__cream{filter:drop-shadow(0 4px 24px rgba(67,38,23,.45))}
 .logo-morph__red{opacity:0}
-.motion .page-index .logo-morph.is-on{display:block}
+.motion .page-index .logo-morph.is-on.is-built{display:block}
 /* the phone drawer open mid-morph: the travelling wordmark hides and the docked header logo is the only one (closing restores it) */
 .site-header.nav-open + .logo-morph.is-on{display:none}
-/* the in-flow <h1> stays in the accessibility tree (opacity, never visibility) while the morph layer draws it */
-.motion .page-index .logo-morph.is-built ~ main .hero__word{opacity:0}
+/* the in-flow <h1> stays visible until the morph layer is placed (site.js adds .is-built the frame after), then
+   hides in that same frame; it stays in the accessibility tree (opacity, never visibility) */
+.logo-morph.is-built ~ main .hero__word{opacity:0}
 /* the nav links are visible by default (no JS, or before site.js wires the drawer); on phones they collapse into the
    drawer only once html.nav-ready is set, and the toggle shows only then. Every bar item has an explicit grid cell. */
 .site-nav{display:block;grid-column:1;grid-row:1;justify-self:start;min-width:0}
@@ -168,8 +181,8 @@ main{position:relative;z-index:2}
 .nav-toggle[aria-expanded="true"] .nav-toggle__bar{background:transparent}
 .nav-toggle[aria-expanded="true"] .nav-toggle__bar::before{transform:translateY(8px) rotate(45deg)}
 .nav-toggle[aria-expanded="true"] .nav-toggle__bar::after{transform:translateY(-8px) rotate(-45deg)}
-/* phones */
-@media (max-width:767.98px){
+/* phones and tablets: the three bar columns only fit without wrapping from 1024px (site.js navQuery, same value) */
+@media (max-width:1023.98px){
   /* no JS / before the drawer is wired: the three links sit in a row under the bar; the bar grows to hold them */
   html:not(.nav-ready) .site-header{height:auto}
   html:not(.nav-ready) .site-header__inner{grid-template-rows:var(--header-h) auto}
@@ -209,9 +222,12 @@ main{position:relative;z-index:2}
    --art-stop is the x where the art must end: 40px short of the nearest text column edge
    (the narrow text column or the wide container's content edge, whichever is nearer the edge).
    Each branch is masked so nothing is painted past that point, at any width. */
-.tree-frame{--art-stop:max(0px,calc(min(calc((100vw - var(--narrow)) / 2),calc(max(0px,(100vw - var(--container)) / 2) + var(--gutter))) - 40px));position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.tree-frame{--vw:calc(100vw - var(--sbw));--edge-text:calc((var(--vw) - var(--narrow)) / 2);--edge-wide:calc(max(0px,(var(--vw) - var(--container) - 2*var(--gutter)) / 2) + var(--gutter));--art-stop:max(0px,calc(min(var(--edge-text),var(--edge-wide)) - 40px));position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
 .tree-frame img{position:absolute;display:block;will-change:transform;max-width:none}
 .tree-frame [data-layer="leftBranch"],.tree-frame [data-layer="rightBranch"]{top:25vh;width:clamp(220px,26vw,520px);height:auto;display:none;opacity:.9}
+/* index and How we work: every wide-container section there has its own ground (accordion, journey, bands, CTA,
+   footer), so only the text column bounds the art */
+.page-index .tree-frame,.page-how .tree-frame{--art-stop:max(0px,calc(var(--edge-text) - 40px))}
 /* the right branch sits lower (38vh) at .9 scale so the two never mirror; site.js reads each branch's top for its parallax limit */
 .tree-frame [data-layer="rightBranch"]{top:38vh;width:calc(clamp(220px,26vw,520px) * .9)}
 /* the sway (site.js) pivots each branch where it enters the page */
@@ -222,12 +238,9 @@ main{position:relative;z-index:2}
 @media (min-width:768px){
   .tree-frame [data-layer="leftBranch"],.tree-frame [data-layer="rightBranch"]{display:block}
 }
-/* phones: one branch tip only (the left one, 200px, at 60vh, opacity .8), shifted 32px off the edge so a leafy tip
-   shows; the mask starts fading 24px before the text column (the gutter) and is fully transparent at its edge,
-   measured in the image's own box, so nothing is ever painted under text */
+/* phones: no branch (the leaf and ground bands carry the art there) */
 @media (max-width:767.98px){
-  .tree-frame{--phone-shift:32px;--art-stop:calc(var(--gutter) + var(--phone-shift))}
-  .tree-frame [data-layer="leftBranch"]{display:block;width:200px;top:60vh;left:calc(-1 * var(--phone-shift));opacity:.8;-webkit-mask-image:linear-gradient(to right,#000 calc(var(--art-stop) - 24px),transparent var(--art-stop));mask-image:linear-gradient(to right,#000 calc(var(--art-stop) - 24px),transparent var(--art-stop))}
+  .tree-frame{display:none}
 }
 /* ---------- Static art bands (in flow, nothing ever sits on them) ----------
    The leaf band sits at the foot of the page content, directly above the brown CTA band;
@@ -256,16 +269,20 @@ main{position:relative;z-index:2}
    three lines + 2vh) on a short hero. The soft shadow lifts the cream word off bright video */
 .hero__word{position:absolute;left:50%;top:min(calc(var(--arch-top) + var(--arch-h) - 18vw - 8px),calc(100% - 2vh - 96px - 31.74vw));transform:translateX(-50%);width:min(92vw,1100px);margin:0;filter:drop-shadow(0 4px 24px rgba(67,38,23,.45))}
 .hero__word img{width:100%;height:auto}
-.hero__tag{position:absolute;left:0;right:0;bottom:calc(2vh + env(safe-area-inset-bottom,0px));text-align:center;font-size:16px;line-height:24px;letter-spacing:0;padding-inline:var(--s1);text-shadow:0 1px 6px rgba(67,38,23,.6)}
-.hero__tag .fa{font-size:16px;line-height:24px}
-/* phone: Persian and English on their own lines */
+.hero__tag{position:absolute;left:0;right:0;bottom:calc(2vh + env(safe-area-inset-bottom,0px));text-align:center;font-size:18px;line-height:26px;letter-spacing:0;padding-inline:24px;text-shadow:0 1px 6px rgba(67,38,23,.6)}
+.hero__tag .fa{font-size:18px;line-height:26px}
+/* phone: Persian and English on their own lines (the English wraps to two balanced, centred lines) */
 .hero__tag .fa,.hero__tag__en{display:block}
+.hero__tag__en{text-wrap:balance}
 .hero__tag__sep{display:none}
 .hero__fade{position:absolute;inset:0;background:var(--cream);opacity:0;pointer-events:none}
 @media (min-width:768px){
   /* the arch is capped at 62vh so its base and the wordmark's kashida line stay apart */
   .hero{--arch-top:10vh;--arch-w:min(44vw,560px);--arch-cap:62vh}
   .hero__word{top:auto;bottom:calc(8vh + env(safe-area-inset-bottom,0px))}
+  /* the arch's outline ends above the Latin letters, never through them (the arch keeps its size): --cut is the
+     letters' top in the window's box = hero height - 8vh foot - 10vh arch top - 0.3232 x the word's width */
+  .hero__window{--cut:calc(max(560px,100vh) - 18vh - min(92vw,1100px) * .3232);-webkit-mask-image:linear-gradient(to bottom,#000 calc(var(--cut) - 32px),transparent calc(var(--cut) - 8px));mask-image:linear-gradient(to bottom,#000 calc(var(--cut) - 32px),transparent calc(var(--cut) - 8px))}
   .hero__tag{bottom:calc(3vh + env(safe-area-inset-bottom,0px));letter-spacing:.02em;padding-inline:var(--s2)}
   .hero__tag .fa,.hero__tag__en,.hero__tag__sep{display:inline}
 }
@@ -292,7 +309,7 @@ main{position:relative;z-index:2}
 /* ---------- Accordion (The celebrations) ----------
    Stacked cards with every body visible are the default at every width: no JS, phones, and short landscape viewports
    (700px tall or less). The strip (one open panel, the rest collapsed behind their overlay triggers) exists only once
-   JS has initialised (html.js), from 768px wide AND 701px tall. */
+   site.js has wired its listeners and states (.accordion-ready), from 768px wide AND 701px tall. */
 .accordion{display:grid;gap:var(--s2)}
 .accordion__panel{position:relative;overflow:hidden;background:var(--brown);color:var(--cream);border-radius:2px;min-height:360px}
 .accordion__media{position:absolute;inset:0}
@@ -300,7 +317,7 @@ main{position:relative;z-index:2}
 .accordion__media::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(67,38,23,.85) 0%,rgba(67,38,23,.25) 55%,rgba(67,38,23,.1) 100%)}
 /* the overlay triggers only mean something once site.js listens to them */
 .accordion__trigger{position:absolute;inset:0;width:100%;text-align:left;z-index:2}
-html:not(.js) .accordion__trigger{display:none}
+.accordion:not(.accordion-ready) .accordion__trigger{display:none}
 .accordion__trigger:focus-visible{outline:2px solid var(--amber);outline-offset:-6px}
 .accordion__label{position:absolute;left:var(--s2);top:var(--s2);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:14px;z-index:1;display:none}
 .accordion__body{position:relative;z-index:1;padding:var(--s3) var(--s2) var(--s2);display:grid;gap:var(--s1);min-height:100%;align-content:end;pointer-events:none}
@@ -313,18 +330,18 @@ html:not(.js) .accordion__trigger{display:none}
 }
 @media (min-width:768px) and (min-height:701px){
   /* the strip's height is its content's (never a viewport-capped height that clips the open body), at least 68vh/620px */
-  .js .accordion{display:flex;gap:var(--s1);min-height:min(68vh,620px)}
-  .js .accordion__panel{flex:1 1 0;min-height:0;transition:flex .7s var(--ease)}
-  .js .accordion__panel.is-open{flex:6 1 0}
-  .js .accordion__panel:not(.is-open) .accordion__media img{filter:blur(2px);transform:scale(1.04)}
-  .js .accordion__panel:not(.is-open) .accordion__media::after{background:linear-gradient(to top,rgba(67,38,23,.7) 0%,rgba(67,38,23,.15) 100%)}
+  .accordion.accordion-ready{display:flex;gap:var(--s1);min-height:min(68vh,620px)}
+  .accordion-ready .accordion__panel{flex:1 1 0;min-height:0;transition:flex .7s var(--ease)}
+  .accordion-ready .accordion__panel.is-open{flex:6 1 0}
+  .accordion-ready .accordion__panel:not(.is-open) .accordion__media img{filter:blur(2px);transform:scale(1.04)}
+  .accordion-ready .accordion__panel:not(.is-open) .accordion__media::after{background:linear-gradient(to top,rgba(67,38,23,.7) 0%,rgba(67,38,23,.15) 100%)}
   /* a closed body is lifted out of flow, so the strip's height comes from the open body alone (a closed strip is
      ~80px wide: its wrapped text must never set the height) */
-  .js .accordion__panel:not(.is-open) .accordion__body{position:absolute;inset:0;opacity:0;transition:opacity .25s}
-  .js .accordion__panel.is-open .accordion__body{opacity:1;transition:opacity .6s .25s}
-  .js .accordion__panel:not(.is-open) .accordion__label{display:block;writing-mode:vertical-rl;transform:rotate(180deg);left:auto;right:50%;top:auto;bottom:40px;transform-origin:center;transform:translateX(50%) rotate(180deg)}
+  .accordion-ready .accordion__panel:not(.is-open) .accordion__body{position:absolute;inset:0;opacity:0;transition:opacity .25s}
+  .accordion-ready .accordion__panel.is-open .accordion__body{opacity:1;transition:opacity .6s .25s}
+  .accordion-ready .accordion__panel:not(.is-open) .accordion__label{display:block;writing-mode:vertical-rl;transform:rotate(180deg);left:auto;right:50%;top:auto;bottom:40px;transform-origin:center;transform:translateX(50%) rotate(180deg)}
   /* a collapsed strip says it opens: a small amber "+" at its foot, under the vertical label */
-  .js .accordion__panel:not(.is-open)::after{content:"+";position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:1;color:var(--amber);font-size:20px;line-height:20px;pointer-events:none}
+  .accordion-ready .accordion__panel:not(.is-open)::after{content:"+";position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:1;color:var(--amber);font-size:20px;line-height:20px;pointer-events:none}
 }
 /* motion paused (the header control, reduced motion, Save-Data): the strip still opens, it just does not animate */
 html.paused .accordion__panel,html.paused .accordion__media img,html.paused .accordion__body{transition:none}
@@ -358,7 +375,7 @@ html.paused .accordion__panel,html.paused .accordion__media img,html.paused .acc
   .journey__line--h{display:block;left:0;right:0;top:7px;width:100%;height:2px}
   .journey__line--v{display:none}
   /* nine columns need the room: the journey takes a 24px gutter (the line runs wider than the text column) */
-  .journey .container{padding-inline:24px}
+  .journey .container{padding-inline:24px;max-width:calc(var(--container) + 48px)}
   .journey__stops{grid-template-columns:repeat(9,minmax(0,1fr));gap:4px;padding-left:0;padding-top:var(--s3)}
   /* align-content:start, or the stop's auto rows stretch to the tallest stop and the labels sit at ragged heights */
   .journey__stop{text-align:center;justify-items:center;align-content:start;min-width:0}
@@ -387,6 +404,9 @@ html.paused .accordion__panel,html.paused .accordion__media img,html.paused .acc
 @media (min-width:600px){.form__row{grid-template-columns:1fr 1fr}}
 .field{display:grid;gap:var(--s1)}
 .field label,.fieldset legend{font-weight:700;font-size:16px;line-height:22px}
+.fieldset legend{padding:0}
+/* a field scrolled to (invalid submit, focus) lands a full 24px below the fixed bar */
+.form .field,.form input,.form textarea{scroll-margin-top:calc(var(--header-h) + 24px)}
 .field__req{font-size:13px;letter-spacing:.04em;color:var(--muted);margin-left:6px}
 .field__help{font-size:14px;line-height:20px;color:var(--muted);order:3}
 /* per-field message (site.js): written on `invalid`, cleared on `input`; the control carries aria-invalid */
@@ -408,14 +428,14 @@ html.paused .accordion__panel,html.paused .accordion__media img,html.paused .acc
 .check input:checked{background-color:var(--brown);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6.5l2.6 2.6L10 3.5' fill='none' stroke='%23F0E6D5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
 .check input:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .form__note{font-size:14px;line-height:20px;color:var(--muted)}
-.form__note a{border-bottom:1px solid currentColor}
+.form__note a{border-bottom:2px solid currentColor}
 /* pending / sent / failed states, announced by the role="status" region */
 .form__status{font-size:16px;line-height:24px;padding:var(--s2);border-top:2px solid var(--red);color:var(--brown)}
 .form__status[hidden],.form__status:empty{display:none}
 .form__status.is-wait{color:var(--muted)}
 .form__status.is-ok{border-top-color:var(--sage)}
 .form__status.is-error{border-top-color:var(--red);color:var(--red)}
-.form__status a{border-bottom:1px solid currentColor}
+.form__status a{border-bottom:2px solid currentColor}
 .form button[disabled]{opacity:.6;cursor:progress;transform:none}
 
 /* ---------- CTA band + footer ---------- */
@@ -428,7 +448,10 @@ html.paused .accordion__panel,html.paused .accordion__media img,html.paused .acc
 .btn--cream{background:transparent;border-color:var(--cream);color:var(--cream)}
 .btn--cream:hover{background:var(--cream);color:var(--brown)}
 .cta__contact{font-size:15px;line-height:22px;letter-spacing:.02em;color:rgba(240,230,213,.8);display:flex;flex-wrap:wrap;justify-content:center;gap:0 12px}
-.cta__contact a{border-bottom:1px solid transparent;transition:border-color .3s,color .3s}
+.cta__contact a{border-bottom:2px solid transparent;transition:border-color .3s,color .3s}
+/* each separator sits inside the item after it, so a wrap never leaves one orphaned at a line end */
+.cta__item{white-space:nowrap}
+.cta__sep{margin-right:12px}
 .cta__contact a:hover{color:var(--cream);border-bottom-color:var(--amber)}
 /* CTA "Poster": 2px cream inset frame, wordmark on top, the tagline inside the amber kashida line.
    The anchor's scroll margin (header + 24px, set with #inquire above) keeps the wordmark clear of the bar when linked to. */
@@ -456,7 +479,7 @@ html.paused .accordion__panel,html.paused .accordion__media img,html.paused .acc
 .site-footer__col{display:grid;gap:10px;align-content:start}
 .site-footer__eyebrow{font-size:12px;line-height:24px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--amber);margin-bottom:2px}
 .site-footer__list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
-.site-footer__list a{display:inline-block;line-height:24px;border-bottom:1px solid transparent;transition:border-color .3s}
+.site-footer__list a{display:inline-block;line-height:24px;border-bottom:2px solid transparent;transition:border-color .3s}
 .site-footer__list a:hover{border-bottom-color:var(--cream)}
 .site-footer__fa{font-size:18px!important;line-height:24px;white-space:nowrap;text-align:right;margin-top:14px}
 .site-footer__bottom{margin-top:48px;padding-top:24px;border-top:2px solid var(--cream);font-size:13px;line-height:24px;color:rgba(240,230,213,.7);display:flex;flex-wrap:wrap;gap:4px 24px;justify-content:space-between}
@@ -556,6 +579,13 @@ html.paused .accordion__panel,html.paused .accordion__media img,html.paused .acc
 .motion .reveal.is-in{opacity:1;transform:none}
 .motion .stagger > *{opacity:0;transform:translateY(16px)}
 
+/* html.motion comes from the head script (before the first paint), html.motion-ready from site.js. Until site.js
+   runs, the drawn lines and dots wait undrawn; if it never runs (blocked, failed), everything it would reveal shows
+   after 3s (an animation, so it never fights GSAP's inline styles: it stops applying once site.js is up) */
+.motion:not(.motion-ready) .kashida-draw path,.motion:not(.motion-ready) .track-line path,.motion:not(.motion-ready) .track-dot{visibility:hidden}
+@keyframes anar-no-script{to{opacity:1;transform:none;visibility:visible}}
+.motion:not(.motion-ready) .reveal,.motion:not(.motion-ready) .stagger > *,.motion:not(.motion-ready) .kashida-draw path,.motion:not(.motion-ready) .track-line path,.motion:not(.motion-ready) .track-dot,.motion:not(.motion-ready) .page-index .site-header--over .site-logo{animation:anar-no-script 0s 3s forwards}
+
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
@@ -564,3 +594,5 @@ html.paused .accordion__panel,html.paused .accordion__media img,html.paused .acc
 }
 
 html:not(.js) .tree-frame{display:none}
+/* site.js never ran (blocked, failed): the branch images have no source yet, so no empty image boxes */
+.tree-frame img:not([src]){visibility:hidden}

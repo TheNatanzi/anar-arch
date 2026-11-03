@@ -7,7 +7,7 @@ PORT = 5181
 H = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(SITE))
 srv = http.server.ThreadingHTTPServer(('127.0.0.1', PORT), H); threading.Thread(target=srv.serve_forever, daemon=True).start()
 pages = ['index.html', 'weddings.html', 'how-we-work.html', 'about.html']
-views = {'desktop': (1440, 900), 'phone': (390, 844)}
+views = {'desktop': (1440, 900), 'w1024': (1024, 768), 'phone': (390, 844)}
 manifest, errors = [], []
 with sync_playwright() as p:
     b = p.chromium.launch(channel='msedge')

@@ -28,7 +28,7 @@ elif model == 'argon':
     class R: stderr = json.dumps(rr.get('usageMetadata', {}))
     r = R()
 else:
-    cmd = ['claude', '-p', '--model', 'claude-fable-5-1', '--output-format', 'text']
+    cmd = ['claude', '-p', '--model', ('claude-opus-5-5' if model == 'opus' else 'claude-fable-5-1'), '--output-format', 'text']
     r = subprocess.run(cmd, input=prompt, capture_output=True, text=True, encoding='utf8', errors='replace', cwd=SITE, timeout=1500, shell=True)
     txt = r.stdout
 m = re.search(r'\{[\s\S]*\}', txt)
