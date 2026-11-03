@@ -16,19 +16,16 @@
   var TREE_LAYERS = {
     leftBranch:   'assets/tree/painted/left-branch.webp',
     rightBranch:  'assets/tree/painted/right-branch.webp',
-    bottomCanopy: 'assets/tree/painted/bottom-canopy.webp',
-    groundBottom: 'assets/tree/painted/ground-bottom.webp',   /* roots + ground in one painting */
     cloud1:       'assets/tree/painted/cloud-1.webp',
     cloud2:       'assets/tree/painted/cloud-2.webp'
   };
+  /* The leaf band (bottom-canopy.webp) and ground band (ground-bottom.webp) are static
+     in-flow images in the HTML, so they never sit behind text. */
 
   /* Parallax speed per layer (fraction of the page's scroll distance).
-     Positive = moves up as you scroll down. The ground arrives last. */
-  var SPEED = {
-    leftBranch: 0.06, rightBranch: 0.08, bottomCanopy: -0.02, groundBottom: 0.22
-  };
+     Positive = moves up as you scroll down. */
+  var SPEED = { leftBranch: 0.06, rightBranch: 0.08 };
   var BRANCH_MAX = 220;   /* px: branches drift up this much at most */
-  var CANOPY_MAX = 60;    /* px: the bottom canopy sinks this much at most */
 
   var html = document.documentElement;
   var body = document.body;
@@ -201,35 +198,17 @@
   }
 
   /* ---------------------------------------------------------
-     3. Tree frame parallax (every page): edge layers at different
-        speeds; the ground band is placed so it lands at the foot
-        of the page.
+     3. Side-branch parallax (every page): the two fixed branches
+        drift up slowly as the page scrolls.
      --------------------------------------------------------- */
   var frame = $('.tree-frame');
   if (frame) {
-    var layer = {};
-    $$('img[data-layer]', frame).forEach(function (el) { layer[el.getAttribute('data-layer')] = el; });
     var scrollDist = function () { return Math.max(1, html.scrollHeight - window.innerHeight); };
-
-    function layoutTree() {
-      var D = scrollDist(), vh = window.innerHeight;
-      var T = D * SPEED.groundBottom;          /* travel of the ground band */
-      var ground = layer.groundBottom;
-      if (ground) { ground.style.top = (vh - ground.offsetHeight + T) + 'px'; }   /* lands at the bottom edge at page end */
-    }
-    ScrollTrigger.addEventListener('refreshInit', layoutTree);
-    layoutTree();
-
-    Object.keys(layer).forEach(function (k) {
-      var el = layer[k], s = SPEED[k];
+    $$('img[data-layer]', frame).forEach(function (el) {
+      var s = SPEED[el.getAttribute('data-layer')];
       if (typeof s === 'undefined') { return; }
       gsap.to(el, {
-        y: function () {
-          var d = -scrollDist() * s;
-          if (k === 'leftBranch' || k === 'rightBranch') { d = Math.max(d, -BRANCH_MAX); }
-          if (k === 'bottomCanopy') { d = Math.min(d, CANOPY_MAX); }
-          return d;
-        },
+        y: function () { return Math.max(-scrollDist() * s, -BRANCH_MAX); },
         ease: 'none',
         scrollTrigger: { trigger: body, start: 'top top', end: 'bottom bottom', scrub: true, invalidateOnRefresh: true }
       });

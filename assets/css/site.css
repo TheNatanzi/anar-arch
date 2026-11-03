@@ -156,38 +156,41 @@ main{position:relative;z-index:2}
 /* page top offset for inner pages */
 .page-top{padding-top:var(--header-h)}
 
-/* ---------- Tree frame (left, right, bottom only; painted layers, always behind the page) ----------
-   Where art comes near text it is faded: branch tips fade toward the text column, the bottom band fades
-   upward and sits at reduced opacity, so nothing is hard to read. */
-.tree-frame{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+/* ---------- Side branches (fixed at the viewport edges, always behind the page) ----------
+   --art-stop is the x where the art must end: 40px short of the nearest text column edge
+   (the narrow text column or the wide container's content edge, whichever is nearer the edge).
+   Each branch is masked so nothing is painted past that point, at any width. */
+.tree-frame{--art-stop:max(0px,calc(min(calc((100vw - var(--narrow)) / 2),calc(max(0px,(100vw - var(--container)) / 2) + var(--gutter))) - 40px));position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
 .tree-frame img{position:absolute;display:block;will-change:transform;max-width:none}
 .tree-frame [data-layer="leftBranch"],.tree-frame [data-layer="rightBranch"]{top:25vh;width:clamp(220px,26vw,520px);height:auto;display:none;opacity:.9}
-.tree-frame [data-layer="leftBranch"]{left:0;-webkit-mask-image:linear-gradient(to right,#000 45%,transparent 92%);mask-image:linear-gradient(to right,#000 45%,transparent 92%)}
-.tree-frame [data-layer="rightBranch"]{right:0;-webkit-mask-image:linear-gradient(to left,#000 45%,transparent 92%);mask-image:linear-gradient(to left,#000 45%,transparent 92%)}
-.tree-frame [data-layer="bottomCanopy"]{left:0;bottom:0;width:100vw;height:min(30vh,30vw);object-fit:cover;object-position:center bottom;opacity:.55;-webkit-mask-image:linear-gradient(to top,#000 20%,transparent 100%);mask-image:linear-gradient(to top,#000 20%,transparent 100%)}
-/* the ground band (roots and ground merged into one painted layer) is placed by JS: it arrives at the foot of the page */
-.tree-frame [data-layer="groundBottom"]{left:0;width:100vw;height:min(34vh,28vw);object-fit:cover;object-position:center bottom;display:none;-webkit-mask-image:linear-gradient(to top,#000 45%,transparent 100%);mask-image:linear-gradient(to top,#000 45%,transparent 100%)}
-.motion .tree-frame [data-layer="groundBottom"]{display:block;top:100vh}
+.tree-frame [data-layer="leftBranch"]{left:0;-webkit-mask-image:linear-gradient(to right,#000 calc(var(--art-stop) - 90px),transparent var(--art-stop));mask-image:linear-gradient(to right,#000 calc(var(--art-stop) - 90px),transparent var(--art-stop))}
+.tree-frame [data-layer="rightBranch"]{right:0;-webkit-mask-image:linear-gradient(to left,#000 calc(var(--art-stop) - 90px),transparent var(--art-stop));mask-image:linear-gradient(to left,#000 calc(var(--art-stop) - 90px),transparent var(--art-stop))}
 @media (min-width:768px){
   .tree-frame [data-layer="leftBranch"],.tree-frame [data-layer="rightBranch"]{display:block}
 }
+/* ---------- Static art bands (in flow, nothing ever sits on them) ----------
+   The leaf band sits at the foot of the page content, directly above the brown CTA band;
+   the ground band sits at the top of the footer and fades into the brown. */
+.leaf-band{position:relative;z-index:2;width:100%;height:min(30vh,30vw);overflow:hidden;background:var(--cream)}
+.leaf-band img{width:100%;height:100%;object-fit:cover;object-position:center bottom;-webkit-mask-image:linear-gradient(to top,#000 55%,transparent 100%);mask-image:linear-gradient(to top,#000 55%,transparent 100%)}
+.ground-band{width:100%;height:min(34vh,28vw);overflow:hidden;margin-top:calc(-1 * var(--s4));margin-bottom:var(--s3)}
+.ground-band img{width:100%;height:100%;object-fit:cover;object-position:center bottom;-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 35%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0%,#000 35%,transparent 100%)}
 
 /* ---------- Hero ---------- */
-/* The arch is sized from the space between the header and the wordmark, so neither the wordmark nor the tagline ever touches its border. */
-.hero{--word-w:min(92vw,1100px);--word-h:calc(var(--word-w) * .345);--word-b:11vh;--arch-gap:3vh;position:relative;height:100vh;height:100svh;min-height:560px;overflow:hidden;background:var(--brown);color:var(--cream)}
+.hero{position:relative;height:100vh;height:100svh;min-height:560px;overflow:hidden;background:var(--brown);color:var(--cream)}
 .hero__video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.hero__shade,.hero__window{position:absolute;left:50%;top:calc(var(--header-h) + var(--arch-gap));transform:translateX(-50%);height:calc(100vh - var(--header-h) - var(--arch-gap) - var(--word-h) - var(--word-b) - var(--arch-gap));height:calc(100svh - var(--header-h) - var(--arch-gap) - var(--word-h) - var(--word-b) - var(--arch-gap));aspect-ratio:3/4;max-width:min(72vw,520px);border-radius:999px 999px 0 0}
-.hero__shade{box-shadow:0 0 0 200vmax rgba(67,38,23,.68)}
-.hero__window{border:2px solid var(--cream)}
+.hero__shade{position:absolute;left:50%;top:9vh;transform:translateX(-50%);width:min(72vw,520px);aspect-ratio:3/4;max-height:72vh;border-radius:999px 999px 0 0;box-shadow:0 0 0 200vmax rgba(67,38,23,.68)}
+.hero__window{position:absolute;left:50%;top:9vh;transform:translateX(-50%);width:min(72vw,520px);aspect-ratio:3/4;max-height:72vh;border:2px solid var(--cream);border-radius:999px 999px 0 0}
 .hero__cloud{position:absolute;left:-10vw;bottom:-10vh;width:120vw;height:auto;pointer-events:none}
 .hero__cloud--2{left:-20vw;width:140vw;bottom:-18vh}
-.hero__word{position:absolute;left:50%;bottom:var(--word-b);transform:translateX(-50%);width:var(--word-w);margin:0}
+/* phone: 9vh (not the morning 6vh) so the two-line tagline never touches the wordmark */
+.hero__word{position:absolute;left:50%;bottom:9vh;transform:translateX(-50%);width:min(92vw,1100px);margin:0}
 .hero__word img{width:100%;height:auto}
 .hero__tag{position:absolute;left:0;right:0;bottom:2vh;text-align:center;font-style:italic;font-size:14px;line-height:20px;letter-spacing:.02em;padding-inline:var(--s2)}
 .hero__fade{position:absolute;inset:0;background:var(--cream);opacity:0;pointer-events:none}
 @media (min-width:768px){
-  .hero{--word-b:8vh}
-  .hero__shade,.hero__window{max-width:min(44vw,560px)}
+  .hero__shade,.hero__window{top:10vh;width:min(44vw,560px);max-height:70vh}
+  .hero__word{bottom:8vh}
   .hero__tag{bottom:3vh;font-size:16px}
 }
 
