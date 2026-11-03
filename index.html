@@ -15,6 +15,8 @@
 <script>document.documentElement.classList.add('js')</script>
 <link rel="preload" href="assets/fonts/TTRamillas-Bold.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/NotoNaskhArabic-arabic.woff2" as="font" type="font/woff2" crossorigin>
+<!-- the hero poster is the first paint of the page (the loop mp4 only arrives after window 'load') -->
+<link rel="preload" href="assets/video/hero-poster-small.jpg" as="image" fetchpriority="high">
 <link rel="stylesheet" href="assets/css/site.css">
 <link rel="icon" href="assets/logo/logo-red.svg" type="image/svg+xml">
 <!-- self-hosted vendors (gsap 3.12.5, ScrollTrigger 3.12.5, lenis 1.1.18), same load order -->
@@ -64,8 +66,9 @@
 
   <!-- 1. Hero: looping video seen through the mirror window; the word is the logo -->
   <section class="hero" aria-label="Anar Events">
-    <!-- no src here: site.js block 0 appends the loop mp4 (1080 from 901px, else 720) after window 'load', never under
-         reduced motion or Save-Data; the poster shows until then and whenever the video is paused -->
+    <!-- no src here: site.js block 0b appends the loop mp4 (1080 only from 1280px wide at devicePixelRatio >= 1.5, else
+         720) after window 'load', never under reduced motion or Save-Data; the poster shows until then and whenever the
+         video is paused -->
     <video class="hero__video" muted loop playsinline disablepictureinpicture disableremoteplayback preload="none" poster="assets/video/hero-poster-small.jpg" width="1920" height="1080" aria-hidden="true" tabindex="-1" data-src-desktop="assets/video/hero-1080-loop.mp4" data-src-mobile="assets/video/hero-720-loop.mp4"></video>
     <div class="hero__shade" aria-hidden="true"></div>
     <div class="hero__window" aria-hidden="true"></div>

@@ -18,7 +18,8 @@
   var ART = 'assets/tree/painted/';
   /* each layer: the file stem and the rendered width (sizes) so the browser picks the 1400px or the 2752px file */
   var TREE_LAYERS = {
-    leftBranch:   { file: 'left-branch',  sizes: '(min-width:1400px) 520px, (min-width:768px) 26vw, 150px' },
+    /* the rendered widths from the CSS: clamp(220px,26vw,520px) from 768px (220px up to 846px, 520px from 2000px), 200px on phones */
+    leftBranch:   { file: 'left-branch',  sizes: '(min-width:2000px) 520px, (min-width:847px) 26vw, (min-width:768px) 220px, 200px' },
     rightBranch:  { file: 'right-branch', sizes: '(min-width:1400px) 520px, 26vw' },
     cloud1:       { file: 'cloud-1',      sizes: '120vw' },
     cloud2:       { file: 'cloud-2',      sizes: '140vw' }
@@ -41,7 +42,12 @@
   var saveData = !!(navigator.connection && navigator.connection.saveData === true);
   var hasGsap = typeof window.gsap !== 'undefined' && typeof window.ScrollTrigger !== 'undefined';
   var isDesktop = function () { return desktopQuery.matches; };
-  var wideScreen = function () { return window.matchMedia('(min-width: 901px)').matches; };
+  /* the 1080 loop only where it is seen: 1280px wide and up on a dense (>= 1.5x) screen; everything else gets the 720 */
+  var wideScreen = function () { return window.matchMedia('(min-width: 1280px)').matches && (window.devicePixelRatio || 1) >= 1.5; };
+  /* the celebrations strip (one open panel, the rest collapsed) needs the width AND the height (site.css: same query);
+     shorter landscape viewports stack the cards like phones */
+  var stripQuery = window.matchMedia('(min-width: 768px) and (min-height: 701px)');
+  var isStrip = function () { return stripQuery.matches; };
 
   var header = $('.site-header');
   var headerHeight = function () { return header ? header.offsetHeight : 0; };
@@ -53,19 +59,24 @@
     return Math.max(0, Math.round(top - headerHeight() - 16));
   };
 
-  /* userPaused: the visitor pressed Pause (or the OS asked for reduced motion / less data at load).
+  /* userPaused: the visitor pressed Pause, or the OS asks for reduced motion / less data at load.
      pressedPause: the visitor chose it (so the OS turning reduced motion off again does not restart the motion).
-     The visitor's choice is kept for the session (sessionStorage) across the four pages.
+     The visitor's choice is kept for the session (sessionStorage) across the four pages. A saved 'playing' never
+     overrides prefers-reduced-motion or Save-Data on load: those are honoured first; the saved choice only counts
+     where motion is allowed (a Play press within the page still works, it is just not replayed on the next load).
      motionOn: the GSAP motion is built right now. */
   var MOTION_KEY = 'anar-motion';
   var readChoice = function () { try { return sessionStorage.getItem(MOTION_KEY); } catch (e) { return null; } };
   var writeChoice = function (v) { try { sessionStorage.setItem(MOTION_KEY, v); } catch (e) { /* private mode: not remembered */ } };
   var choice = readChoice();
   var pressedPause = choice === 'paused';
-  var userPaused = pressedPause || (choice !== 'playing' && (reduced || saveData));
+  var userPaused = pressedPause || reduced || saveData;
   var motionOn = false;
   var canMotion = function () { return hasGsap && !reduced && !userPaused; };
+  /* html.paused: anchors jump at once and the celebrations strip opens without its transitions (site.css) */
+  var syncPaused = function () { html.classList.toggle('paused', userPaused); };
   html.classList.add(canMotion() ? 'motion' : 'reduced');
+  syncPaused();
   if (hasGsap) { gsap.registerPlugin(ScrollTrigger); }
 
   /* 0. Tree layer sources from the map (every page): src + srcset (700w, 1400w, 2752w) + sizes.
@@ -91,8 +102,8 @@
 
   /* ---------------------------------------------------------
      0b. Hero video (index): no src in the HTML. The loop mp4
-         (1080 from 901px, else 720; a <source media> attribute
-         is ignored inside <video>) is appended after window
+         (1080 only from 1280px wide at DPR >= 1.5, else 720; a <source media>
+         attribute is ignored inside <video>) is appended after window
          'load', never under prefers-reduced-motion or Save-Data
          unless the visitor presses Play. Plays only while the
          tab is visible and the hero is on screen; pauses off
@@ -161,16 +172,16 @@
   if (heroToggle && !heroVideo && !hasGsap) { heroToggle.hidden = true; }
 
   /* ---------------------------------------------------------
-     Smooth scroll (Lenis) wired to the GSAP ticker. Smooth
-     scrolling is scrolling, not decoration, so it stays on
-     while motion is paused; it never runs under reduced motion:
-     an OS change at runtime destroys it (stopLenis) and builds
-     it again when motion returns (startLenis).
+     Smooth scroll (Lenis) wired to the GSAP ticker. It runs
+     only while motion is on: Pause motion, reduced motion and
+     Save-Data all destroy it (stopLenis) and it is built again
+     when motion returns (startLenis); while it is off, anchors
+     jump at once (html.paused sets scroll-behavior:auto).
      --------------------------------------------------------- */
   var lenis = null;
   var lenisTick = function (t) { if (lenis) { lenis.raf(t * 1000); } };
   function startLenis() {
-    if (lenis || !hasGsap || reduced || typeof window.Lenis === 'undefined') { return; }
+    if (lenis || !hasGsap || reduced || userPaused || typeof window.Lenis === 'undefined') { return; }
     lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
     lenis.on('scroll', ScrollTrigger.update);
     gsap.ticker.add(lenisTick);
@@ -198,7 +209,8 @@
   }
   function scrollToEl(el) {
     if (lenis) { lenis.scrollTo(el, { offset: headerOffset(el), duration: 1.4 }); }
-    else { el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }); }   /* scroll-margin-top clears the header */
+    /* scroll-margin-top clears the header; 'auto' follows the CSS, which is instant while paused (html.paused) */
+    else { el.scrollIntoView({ behavior: (reduced || userPaused) ? 'auto' : 'smooth', block: 'start' }); }
     focusEl(el);
   }
   /* Same-page anchors (including "index.html#inquire" when on index) */
@@ -280,23 +292,24 @@
      5. Accordion panels (every mode: reduced motion, no GSAP):
         hover expands (pointer devices), click / Enter / Space
         and focus expand (touch, keyboard); arrow keys, Home and
-        End move between triggers. Stacked cards on phones, every
+        End move between triggers. Stacked cards (phones and
+        viewports 700px tall or less: isStrip() false), every
         body shown, so the overlay triggers are hidden there (out
-        of the tab order; back on desktop). On desktop a closed
-        panel's body is inert and aria-hidden (it is faded out),
-        the open one is live.
+        of the tab order; back on the strip). On the strip a
+        closed panel's body is inert and aria-hidden (it is faded
+        out), the open one is live.
      --------------------------------------------------------- */
   $$('[data-accordion]').forEach(function (acc) {
     var panels = $$('.accordion__panel', acc);
     var triggers = panels.map(function (p) { return $('.accordion__trigger', p); });
     var hoverable = window.matchMedia('(hover: hover)').matches;
     function syncBodies() {
-      var phone = !isDesktop();
+      var stacked = !isStrip();
       panels.forEach(function (p, i) {
         var bodyEl = $('.accordion__body', p);
-        if (triggers[i]) { triggers[i].hidden = phone; }
+        if (triggers[i]) { triggers[i].hidden = stacked; }
         if (!bodyEl) { return; }
-        var closed = !phone && !p.classList.contains('is-open');
+        var closed = !stacked && !p.classList.contains('is-open');
         bodyEl.inert = closed;
         if (closed) { bodyEl.setAttribute('aria-hidden', 'true'); } else { bodyEl.removeAttribute('aria-hidden'); }
       });
@@ -311,10 +324,10 @@
     }
     panels.forEach(function (p, i) {
       var btn = triggers[i];
-      if (hoverable) { p.addEventListener('mouseenter', function () { if (isDesktop()) { open(p); } }); }
+      if (hoverable) { p.addEventListener('mouseenter', function () { if (isStrip()) { open(p); } }); }
       if (!btn) { return; }
       btn.addEventListener('click', function () { open(p); });
-      btn.addEventListener('focus', function () { if (isDesktop()) { open(p); } });
+      btn.addEventListener('focus', function () { if (isStrip()) { open(p); } });
       btn.addEventListener('keydown', function (e) {
         var next = null;
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { next = (i + 1) % triggers.length; }
@@ -328,6 +341,7 @@
       });
     });
     syncBodies();
+    onMQ(stripQuery, syncBodies);
     window.addEventListener('resize', syncBodies);
   });
 
@@ -339,6 +353,71 @@
         finally. Without fetch the form submits normally.
      --------------------------------------------------------- */
   var form = $('.form[data-ajax]');
+  if (form) {
+    /* the wedding date cannot be in the past: min = today (local) */
+    var dateEl = $('input[type="date"]', form);
+    if (dateEl) {
+      var now = new Date();
+      var two = function (n) { return (n < 10 ? '0' : '') + n; };
+      dateEl.min = now.getFullYear() + '-' + two(now.getMonth() + 1) + '-' + two(now.getDate());
+    }
+    /* per-field validation: an invalid control gets aria-invalid="true" and a message under it (.field__error, added
+       to its aria-describedby, the help line kept); `input` clears it as soon as the entry is valid. The browser's
+       bubble is replaced (noValidate + the invalid event cancelled); submit focuses the first invalid field. */
+    var messageFor = function (el) {
+      var v = el.validity;
+      if (v.valueMissing) { return 'Please fill in this field.'; }
+      if (v.typeMismatch && el.type === 'email') { return 'Please enter an email address like name@example.com.'; }
+      if (v.rangeUnderflow && el.type === 'date') { return 'Please choose today or a later date.'; }
+      if (v.rangeUnderflow) { return 'Please enter ' + el.min + ' or more.'; }
+      if (v.badInput || v.stepMismatch) { return 'Please enter a whole number.'; }
+      return el.validationMessage || 'Please check this entry.';
+    };
+    var errorFor = function (el, create) {
+      var field = el.closest('.field');
+      var err = field ? $('.field__error', field) : null;
+      if (!err && create && field) {
+        err = document.createElement('p');
+        err.className = 'field__error';
+        err.id = (el.id || el.name) + '-error';
+        field.appendChild(err);
+      }
+      return err;
+    };
+    var describe = function (el, id, on) {
+      var ids = (el.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean);
+      var at = ids.indexOf(id);
+      if (on && at < 0) { ids.push(id); }
+      if (!on && at >= 0) { ids.splice(at, 1); }
+      if (ids.length) { el.setAttribute('aria-describedby', ids.join(' ')); } else { el.removeAttribute('aria-describedby'); }
+    };
+    var flagField = function (el) {
+      var err = errorFor(el, true);
+      el.setAttribute('aria-invalid', 'true');
+      if (err) { err.textContent = messageFor(el); describe(el, err.id, true); }
+    };
+    var clearField = function (el) {
+      var err = errorFor(el, false);
+      el.removeAttribute('aria-invalid');
+      if (err) { err.textContent = ''; describe(el, err.id, false); }
+    };
+    var controls = $$('.field input, .field textarea, .field select', form);
+    controls.forEach(function (el) {
+      el.addEventListener('invalid', function (e) { e.preventDefault(); flagField(el); });
+      el.addEventListener('input', function () {
+        if (el.validity.valid) { clearField(el); }
+        else if (el.getAttribute('aria-invalid') === 'true') { flagField(el); }
+      });
+    });
+    form.addEventListener('reset', function () { controls.forEach(clearField); });
+    form.noValidate = true;
+    form.addEventListener('submit', function (e) {
+      if (form.checkValidity()) { return; }   /* fires `invalid` on each failing control (flagged above) */
+      e.preventDefault();
+      var first = $('[aria-invalid="true"]', form);
+      if (first) { first.focus(); }
+    });
+  }
   if (form && window.fetch && window.FormData) {
     var status = $('.form__status', form);
     var submitBtn = $('button[type="submit"]', form);
@@ -367,7 +446,7 @@
     };
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      if (!form.checkValidity()) { form.reportValidity(); return; }
+      if (!form.checkValidity()) { return; }   /* the per-field messages and focus are handled above */
       if (/FORMSPREE_ID/.test(form.action)) {
         say('error', 'Online inquiries are not connected yet. Your entries are still here. Please', true);
         if (status) { status.focus(); }
@@ -485,10 +564,13 @@
         var MORPH_END = 0.7;   /* fraction of the hero height */
         var from = { x: 0, y: 0, w: 1 }, to = { x: 0, y: 0, w: 1 };
         var measure = function () {
-          /* hero wordmark in document coordinates (the hero sits at the top of the page) */
+          /* the start box is the in-flow <h1> img (never the .logo-morph layer, which may be mid-transform when a
+             refresh runs): its rect relative to the hero's own rect, plus the hero's document top, so the value does
+             not depend on the scroll position at the time of the measure */
           var sy = window.scrollY || window.pageYOffset;
+          var hr = hero.getBoundingClientRect();
           var h = heroWordImg.getBoundingClientRect();
-          from = { x: h.left, y: h.top + sy, w: h.width };
+          from = { x: h.left, y: (h.top - hr.top) + (hr.top + sy), w: h.width };
           /* header logo box in viewport coordinates (the header is fixed) */
           var l = headerLogoBox.getBoundingClientRect();
           to = { x: l.left, y: l.top, w: l.width };
@@ -661,13 +743,17 @@
   function pauseAll() {
     userPaused = true;
     setToggle();
+    syncPaused();
     if (heroVideo) { heroVideo.pause(); }
     killMotion();
+    stopLenis();   /* smooth scrolling is motion too: anchors jump at once while paused */
   }
   function playAll() {
     userPaused = false;
     setToggle();
+    syncPaused();
     if (canMotion()) { buildMotion(); }
+    startLenis();   /* never under reduced motion (startLenis checks) */
     if (heroVideo) { if (!videoLoaded) { loadHeroVideo(); } else { playVideo(); } }
   }
   if (heroToggle) {
@@ -680,13 +766,8 @@
   }
   onMQ(rmq, function (e) {
     reduced = e.matches;
-    if (reduced) {
-      pauseAll();
-      stopLenis();
-    } else {
-      startLenis();
-      if (!pressedPause) { playAll(); }
-    }
+    if (reduced) { pauseAll(); }
+    else if (!pressedPause && !saveData) { playAll(); }
   });
 
   /* ---- start ---- */

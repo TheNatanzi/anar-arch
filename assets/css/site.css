@@ -41,7 +41,8 @@
 /* ---------- Reset-ish ---------- */
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;background:var(--cream)}
-html.lenis{scroll-behavior:auto}
+/* Lenis scrolls the window itself; while motion is paused (site.js html.paused) anchors jump at once */
+html.lenis,html.paused{scroll-behavior:auto}
 body{margin:0;background:var(--cream);color:var(--brown);font-family:var(--font-latin);font-size:18px;line-height:28px;font-weight:700;font-style:normal;overflow-x:hidden}
 /* no Regular, no Italic anywhere in Latin text (the Bold file is the only face served) */
 em,i,cite,q,address,dfn,var{font-style:normal}
@@ -90,9 +91,10 @@ main{position:relative;z-index:2}
 .section__head .scribble{margin:var(--s2) auto 0}
 .two-col{display:grid;gap:var(--s3)}
 @media (min-width:768px){.two-col{grid-template-columns:1fr 1fr;gap:var(--s4)}}
-.pair{display:grid;gap:var(--s1)}
+/* eyebrow + Persian on one row at every width (phones: the Persian hugs the right of the eyebrow row) */
+.pair{display:grid;gap:var(--s1);grid-template-columns:1fr auto;align-items:baseline}
 @media (min-width:768px){
-  .pair{grid-template-columns:1fr 1fr;align-items:baseline}
+  .pair{grid-template-columns:1fr 1fr}
   .pair .fa{text-align:right}
 }
 
@@ -240,14 +242,19 @@ main{position:relative;z-index:2}
 /* ---------- Hero ---------- */
 .hero{position:relative;height:100vh;height:100svh;min-height:560px;overflow:hidden;background:var(--brown);color:var(--cream)}
 .hero__video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-/* phone: the window starts at 12vh so it clears the header bar */
-.hero__shade{position:absolute;left:50%;top:12vh;transform:translateX(-50%);width:min(72vw,520px);aspect-ratio:3/4;max-height:72vh;border-radius:999px 999px 0 0;box-shadow:0 0 0 200vmax rgba(67,38,23,.76)}
-.hero__window{position:absolute;left:50%;top:12vh;transform:translateX(-50%);width:min(72vw,520px);aspect-ratio:3/4;max-height:72vh;border:2px solid var(--cream);border-radius:999px 999px 0 0}
+/* the arch: --arch-top / --arch-w / --arch-h describe the window's box (height = 3:4 of the width, capped), so the
+   wordmark can be placed against the arch's foot. Phone: the window starts at 12vh so it clears the header bar */
+.hero{--arch-top:12vh;--arch-w:min(72vw,520px);--arch-cap:72vh;--arch-h:min(calc(var(--arch-w) * 4 / 3),var(--arch-cap))}
+.hero__shade{position:absolute;left:50%;top:var(--arch-top);transform:translateX(-50%);width:var(--arch-w);aspect-ratio:3/4;max-height:var(--arch-cap);border-radius:999px 999px 0 0;box-shadow:0 0 0 200vmax rgba(67,38,23,.76)}
+.hero__window{position:absolute;left:50%;top:var(--arch-top);transform:translateX(-50%);width:var(--arch-w);aspect-ratio:3/4;max-height:var(--arch-cap);border:2px solid var(--cream);border-radius:999px 999px 0 0}
 /* the clouds stay hidden until their scroll timeline sets their opacity (no flash); still pages never show them */
 .hero__cloud{position:absolute;left:-10vw;bottom:-10vh;width:120vw;height:auto;pointer-events:none;opacity:0}
 .hero__cloud--2{left:-20vw;width:140vw;bottom:-18vh}
-/* phone: 12vh so the stacked tagline (up to three lines) never touches the wordmark; the soft shadow lifts the cream word off bright video */
-.hero__word{position:absolute;left:50%;bottom:calc(12vh + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(92vw,1100px);margin:0;filter:drop-shadow(0 4px 24px rgba(67,38,23,.45))}
+/* phone: the wordmark hangs from the arch's foot like on desktop. The Latin letters fill the top 56.6% of the 1600x552
+   artwork (the kashida sits below), so with the word 92vw wide (31.74vw tall) the letters end 18vw down: their foot
+   sits 8px above the arch base, inside its lower band. The second term keeps it clear of the stacked tagline (up to
+   three lines + 2vh) on a short hero. The soft shadow lifts the cream word off bright video */
+.hero__word{position:absolute;left:50%;top:min(calc(var(--arch-top) + var(--arch-h) - 18vw - 8px),calc(100% - 2vh - 96px - 31.74vw));transform:translateX(-50%);width:min(92vw,1100px);margin:0;filter:drop-shadow(0 4px 24px rgba(67,38,23,.45))}
 .hero__word img{width:100%;height:auto}
 .hero__tag{position:absolute;left:0;right:0;bottom:calc(2vh + env(safe-area-inset-bottom,0px));text-align:center;font-size:16px;line-height:24px;letter-spacing:0;padding-inline:var(--s1);text-shadow:0 1px 6px rgba(67,38,23,.6)}
 .hero__tag .fa{font-size:16px;line-height:24px}
@@ -256,8 +263,9 @@ main{position:relative;z-index:2}
 .hero__tag__sep{display:none}
 .hero__fade{position:absolute;inset:0;background:var(--cream);opacity:0;pointer-events:none}
 @media (min-width:768px){
-  .hero__shade,.hero__window{top:10vh;width:min(44vw,560px);max-height:70vh}
-  .hero__word{bottom:calc(8vh + env(safe-area-inset-bottom,0px))}
+  /* the arch is capped at 62vh so its base and the wordmark's kashida line stay apart */
+  .hero{--arch-top:10vh;--arch-w:min(44vw,560px);--arch-cap:62vh}
+  .hero__word{top:auto;bottom:calc(8vh + env(safe-area-inset-bottom,0px))}
   .hero__tag{bottom:calc(3vh + env(safe-area-inset-bottom,0px));letter-spacing:.02em;padding-inline:var(--s2)}
   .hero__tag .fa,.hero__tag__en,.hero__tag__sep{display:inline}
 }
@@ -278,35 +286,48 @@ main{position:relative;z-index:2}
 @media (min-width:768px){.pillars{grid-template-columns:repeat(3,1fr)}}
 .pillar{border-top:2px solid var(--red);padding-top:var(--s2)}
 .pillar__n{display:block;font-size:16px;letter-spacing:.06em;color:var(--red);margin-bottom:var(--s1)}
+.pillar__n.fa{text-align:left}
 .pillar h3{margin-bottom:var(--s1)}
 
-/* ---------- Accordion (The celebrations) ---------- */
+/* ---------- Accordion (The celebrations) ----------
+   Stacked cards with every body visible are the default at every width: no JS, phones, and short landscape viewports
+   (700px tall or less). The strip (one open panel, the rest collapsed behind their overlay triggers) exists only once
+   JS has initialised (html.js), from 768px wide AND 701px tall. */
 .accordion{display:grid;gap:var(--s2)}
 .accordion__panel{position:relative;overflow:hidden;background:var(--brown);color:var(--cream);border-radius:2px;min-height:360px}
 .accordion__media{position:absolute;inset:0}
 .accordion__media img{width:100%;height:100%;object-fit:cover;transition:filter .6s var(--ease),transform .6s var(--ease)}
 .accordion__media::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(67,38,23,.85) 0%,rgba(67,38,23,.25) 55%,rgba(67,38,23,.1) 100%)}
+/* the overlay triggers only mean something once site.js listens to them */
 .accordion__trigger{position:absolute;inset:0;width:100%;text-align:left;z-index:2}
+html:not(.js) .accordion__trigger{display:none}
 .accordion__trigger:focus-visible{outline:2px solid var(--amber);outline-offset:-6px}
 .accordion__label{position:absolute;left:var(--s2);top:var(--s2);font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:14px;z-index:1;display:none}
 .accordion__body{position:relative;z-index:1;padding:var(--s3) var(--s2) var(--s2);display:grid;gap:var(--s1);min-height:100%;align-content:end;pointer-events:none}
 .accordion__body[hidden]{display:none}
 .accordion__body h3{font-size:clamp(26px,3vw,34px)}
-.accordion__body .fa{color:var(--cream);opacity:.9}
+.accordion__body .fa{color:var(--cream);opacity:.9;text-align:right}
 .accordion__body p:last-child{max-width:34em;opacity:.95}
 @media (min-width:768px){
-  .accordion{display:flex;gap:var(--s1);height:min(68vh,620px)}
-  .accordion__panel{flex:1 1 0;min-height:0;transition:flex .7s var(--ease)}
-  .accordion__panel.is-open{flex:6 1 0}
-  .accordion__panel:not(.is-open) .accordion__media img{filter:blur(2px);transform:scale(1.04)}
-  .accordion__panel:not(.is-open) .accordion__media::after{background:linear-gradient(to top,rgba(67,38,23,.7) 0%,rgba(67,38,23,.15) 100%)}
-  .accordion__panel:not(.is-open) .accordion__body{opacity:0;transition:opacity .25s}
-  .accordion__panel.is-open .accordion__body{opacity:1;transition:opacity .6s .25s}
-  .accordion__panel:not(.is-open) .accordion__label{display:block;writing-mode:vertical-rl;transform:rotate(180deg);left:auto;right:50%;top:auto;bottom:40px;transform-origin:center;transform:translateX(50%) rotate(180deg)}
-  /* a collapsed strip says it opens: a small amber "+" at its foot, under the vertical label */
-  .accordion__panel:not(.is-open)::after{content:"+";position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:1;color:var(--amber);font-size:20px;line-height:20px;pointer-events:none}
   .accordion__body{padding:var(--s4) var(--s3) var(--s3)}
 }
+@media (min-width:768px) and (min-height:701px){
+  /* the strip's height is its content's (never a viewport-capped height that clips the open body), at least 68vh/620px */
+  .js .accordion{display:flex;gap:var(--s1);min-height:min(68vh,620px)}
+  .js .accordion__panel{flex:1 1 0;min-height:0;transition:flex .7s var(--ease)}
+  .js .accordion__panel.is-open{flex:6 1 0}
+  .js .accordion__panel:not(.is-open) .accordion__media img{filter:blur(2px);transform:scale(1.04)}
+  .js .accordion__panel:not(.is-open) .accordion__media::after{background:linear-gradient(to top,rgba(67,38,23,.7) 0%,rgba(67,38,23,.15) 100%)}
+  /* a closed body is lifted out of flow, so the strip's height comes from the open body alone (a closed strip is
+     ~80px wide: its wrapped text must never set the height) */
+  .js .accordion__panel:not(.is-open) .accordion__body{position:absolute;inset:0;opacity:0;transition:opacity .25s}
+  .js .accordion__panel.is-open .accordion__body{opacity:1;transition:opacity .6s .25s}
+  .js .accordion__panel:not(.is-open) .accordion__label{display:block;writing-mode:vertical-rl;transform:rotate(180deg);left:auto;right:50%;top:auto;bottom:40px;transform-origin:center;transform:translateX(50%) rotate(180deg)}
+  /* a collapsed strip says it opens: a small amber "+" at its foot, under the vertical label */
+  .js .accordion__panel:not(.is-open)::after{content:"+";position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:1;color:var(--amber);font-size:20px;line-height:20px;pointer-events:none}
+}
+/* motion paused (the header control, reduced motion, Save-Data): the strip still opens, it just does not animate */
+html.paused .accordion__panel,html.paused .accordion__media img,html.paused .accordion__body{transition:none}
 
 /* ---------- Quote ---------- */
 .quote{text-align:center}
@@ -348,14 +369,30 @@ main{position:relative;z-index:2}
 
 /* ---------- Inquire form ---------- */
 .inquire{background:transparent}
+/* below the nine-column line the journey and the form sit closer; phones take a shorter section rhythm */
+@media (max-width:1023.98px){
+  .journey{padding-bottom:clamp(40px,6vh,64px)}
+  .inquire{padding-top:clamp(40px,6vh,64px)}
+}
+@media (max-width:767.98px){
+  .section{padding-block:clamp(56px,8vh,80px)}
+  .section--tight{padding-block:clamp(48px,7vh,80px)}
+  .journey{padding-bottom:clamp(40px,6vh,64px)}
+  .inquire{padding-top:clamp(40px,6vh,64px)}
+}
 .form{display:grid;gap:var(--s3)}
-/* paired fields are bottom-aligned (a help line above one input never lifts it off its partner); inputs share one height */
-.form__row{display:grid;gap:var(--s3);align-items:end}
+/* paired fields are top-aligned so their labels share a baseline; the help and error lines sit under the input
+   (order), so no field's input ever drops below its partner's; inputs share one height (54px) */
+.form__row{display:grid;gap:var(--s3);align-items:start}
 @media (min-width:600px){.form__row{grid-template-columns:1fr 1fr}}
 .field{display:grid;gap:var(--s1)}
 .field label,.fieldset legend{font-weight:700;font-size:16px;line-height:22px}
 .field__req{font-size:13px;letter-spacing:.04em;color:var(--muted);margin-left:6px}
-.field__help{font-size:14px;line-height:20px;color:var(--muted)}
+.field__help{font-size:14px;line-height:20px;color:var(--muted);order:3}
+/* per-field message (site.js): written on `invalid`, cleared on `input`; the control carries aria-invalid */
+.field__error{font-size:14px;line-height:20px;color:var(--red);order:4}
+.field__error:empty{display:none}
+.field [aria-invalid="true"]{border-color:var(--red)}
 .field input,.field textarea,.field select{font:inherit;color:var(--brown);background:transparent;border:2px solid var(--brown);border-radius:2px;padding:11px 13px;width:100%}
 .field input,.field select{height:54px;line-height:28px}
 .field input::placeholder,.field textarea::placeholder{color:var(--muted);opacity:.8}
@@ -397,7 +434,12 @@ main{position:relative;z-index:2}
    The anchor's scroll margin (header + 24px, set with #inquire above) keeps the wordmark clear of the bar when linked to. */
 .cta--poster{padding-top:clamp(48px,8vh,80px);padding-bottom:clamp(64px,10vh,112px)}
 .cta--poster::before{content:"";position:absolute;inset:16px;border:2px solid var(--cream);pointer-events:none}
-@media (min-width:768px){.cta--poster::before{inset:24px}}
+/* desktop: the wordmark starts a full header height (96px) below the frame's top edge (16px): whatever scroll stop
+   puts the frame's edge under the fixed bar, the bar never sits over the wordmark */
+@media (min-width:768px){
+  .cta--poster{padding-top:clamp(112px,15vh,144px)}
+  .cta--poster::before{inset:16px 24px 24px}
+}
 .cta--poster .container{position:relative;z-index:1}
 .cta__wordmark{width:clamp(132px,13vw,176px);height:auto;display:block;margin:0 auto clamp(32px,6vh,56px)}
 .cta--poster .cta__title{font-size:clamp(34px,7.4vw,104px);letter-spacing:.08em;margin-bottom:clamp(24px,4vh,40px)}
