@@ -45,25 +45,49 @@
 
   var header = $('.site-header');
   var headerHeight = function () { return header ? header.offsetHeight : 0; };
-  /* px: the branches (top: 25vh) drift up at most to 16px below the header bar, so a branch tip never passes under it */
-  var BRANCH_MAX = function () { return Math.max(0, Math.round(0.25 * window.innerHeight - headerHeight() - 16)); };
+  /* px: a branch (top: 25vh left, 38vh right, from the CSS) drifts up at most to 16px below the header bar, so a branch
+     tip never passes under it */
+  var BRANCH_MAX = function (el) {
+    var top = parseFloat(getComputedStyle(el).top);
+    if (!isFinite(top)) { top = 0.25 * window.innerHeight; }
+    return Math.max(0, Math.round(top - headerHeight() - 16));
+  };
 
   /* userPaused: the visitor pressed Pause (or the OS asked for reduced motion / less data at load).
+     pressedPause: the visitor chose it (so the OS turning reduced motion off again does not restart the motion).
+     The visitor's choice is kept for the session (sessionStorage) across the four pages.
      motionOn: the GSAP motion is built right now. */
-  var userPaused = reduced || saveData;
+  var MOTION_KEY = 'anar-motion';
+  var readChoice = function () { try { return sessionStorage.getItem(MOTION_KEY); } catch (e) { return null; } };
+  var writeChoice = function (v) { try { sessionStorage.setItem(MOTION_KEY, v); } catch (e) { /* private mode: not remembered */ } };
+  var choice = readChoice();
+  var pressedPause = choice === 'paused';
+  var userPaused = pressedPause || (choice !== 'playing' && (reduced || saveData));
   var motionOn = false;
   var canMotion = function () { return hasGsap && !reduced && !userPaused; };
   html.classList.add(canMotion() ? 'motion' : 'reduced');
   if (hasGsap) { gsap.registerPlugin(ScrollTrigger); }
 
-  /* 0. Tree layer sources from the map (every page): src + srcset (1400w, 2752w) + sizes */
-  $$('[data-layer]').forEach(function (el) {
+  /* 0. Tree layer sources from the map (every page): src + srcset (700w, 1400w, 2752w) + sizes.
+        The clouds only move (hero scroll timeline), so they are requested once motion is built; the right branch is
+        display:none on phones, so it loads only from 768px. */
+  var layerSrc = function (el) {
     var layer = TREE_LAYERS[el.getAttribute('data-layer')];
-    if (!layer) { return; }
+    if (!layer || el.getAttribute('srcset')) { return; }
     el.setAttribute('sizes', layer.sizes);
-    el.setAttribute('srcset', ART + layer.file + '-1400.webp 1400w, ' + ART + layer.file + '.webp 2752w');
+    el.setAttribute('srcset', ART + layer.file + '-700.webp 700w, ' + ART + layer.file + '-1400.webp 1400w, ' + ART + layer.file + '.webp 2752w');
     el.src = ART + layer.file + '.webp';
-  });
+  };
+  var loadLayers = function () {
+    $$('[data-layer]').forEach(function (el) {
+      var key = el.getAttribute('data-layer');
+      if (key === 'cloud1' || key === 'cloud2') { return; }   /* loaded by buildMotion */
+      if (key === 'rightBranch' && !isDesktop()) { return; }
+      layerSrc(el);
+    });
+  };
+  loadLayers();
+  onMQ(desktopQuery, function (e) { if (e.matches) { loadLayers(); } });
 
   /* ---------------------------------------------------------
      0b. Hero video (index): no src in the HTML. The loop mp4
@@ -139,24 +163,41 @@
   /* ---------------------------------------------------------
      Smooth scroll (Lenis) wired to the GSAP ticker. Smooth
      scrolling is scrolling, not decoration, so it stays on
-     while motion is paused; it never runs under reduced motion.
+     while motion is paused; it never runs under reduced motion:
+     an OS change at runtime destroys it (stopLenis) and builds
+     it again when motion returns (startLenis).
      --------------------------------------------------------- */
   var lenis = null;
-  if (hasGsap && !reduced && typeof window.Lenis !== 'undefined') {
+  var lenisTick = function (t) { if (lenis) { lenis.raf(t * 1000); } };
+  function startLenis() {
+    if (lenis || !hasGsap || reduced || typeof window.Lenis === 'undefined') { return; }
     lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
     lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.add(function (t) { lenis.raf(t * 1000); });
+    gsap.ticker.add(lenisTick);
     gsap.ticker.lagSmoothing(0);
     html.classList.add('lenis');
+    if (header && header.classList.contains('nav-open')) { lenis.stop(); }
   }
-  function headerOffset() { return -(headerHeight() + 8); }
+  function stopLenis() {
+    if (!lenis) { return; }
+    gsap.ticker.remove(lenisTick);
+    lenis.destroy();
+    lenis = null;
+    html.classList.remove('lenis');
+  }
+  startLenis();
+  /* the destination's own scroll-margin-top (header + 8px; header + 24px for #inquire and the CTA) */
+  function headerOffset(el) {
+    var m = el ? parseFloat(getComputedStyle(el).scrollMarginTop) : NaN;
+    return -(isFinite(m) && m > 0 ? m : headerHeight() + 8);
+  }
   /* focus moves to the destination (keyboard and screen-reader users continue from there) */
   function focusEl(el) {
     if (!el.hasAttribute('tabindex')) { el.setAttribute('tabindex', '-1'); }
     try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
   }
   function scrollToEl(el) {
-    if (lenis) { lenis.scrollTo(el, { offset: headerOffset(), duration: 1.4 }); }
+    if (lenis) { lenis.scrollTo(el, { offset: headerOffset(el), duration: 1.4 }); }
     else { el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }); }   /* scroll-margin-top clears the header */
     focusEl(el);
   }
@@ -198,7 +239,7 @@
     if (!header || morphDrivesHeader) { return; }
     header.classList.toggle('is-scrolled', (window.scrollY || window.pageYOffset) > 40);
   }
-  if (lenis) { lenis.on('scroll', onScrollState); } else { window.addEventListener('scroll', onScrollState, { passive: true }); }
+  window.addEventListener('scroll', onScrollState, { passive: true });   /* Lenis scrolls the window, so this fires either way */
   onScrollState();
   function syncNav() {
     if (!header || !navToggle || !nav) { return; }
@@ -239,19 +280,23 @@
      5. Accordion panels (every mode: reduced motion, no GSAP):
         hover expands (pointer devices), click / Enter / Space
         and focus expand (touch, keyboard); arrow keys, Home and
-        End move between triggers. Stacked cards on phones. On
-        desktop a closed panel's body is inert and aria-hidden
-        (it is faded out), the open one is live.
+        End move between triggers. Stacked cards on phones, every
+        body shown, so the overlay triggers are hidden there (out
+        of the tab order; back on desktop). On desktop a closed
+        panel's body is inert and aria-hidden (it is faded out),
+        the open one is live.
      --------------------------------------------------------- */
   $$('[data-accordion]').forEach(function (acc) {
     var panels = $$('.accordion__panel', acc);
     var triggers = panels.map(function (p) { return $('.accordion__trigger', p); });
     var hoverable = window.matchMedia('(hover: hover)').matches;
     function syncBodies() {
-      panels.forEach(function (p) {
+      var phone = !isDesktop();
+      panels.forEach(function (p, i) {
         var bodyEl = $('.accordion__body', p);
+        if (triggers[i]) { triggers[i].hidden = phone; }
         if (!bodyEl) { return; }
-        var closed = isDesktop() && !p.classList.contains('is-open');
+        var closed = !phone && !p.classList.contains('is-open');
         bodyEl.inert = closed;
         if (closed) { bodyEl.setAttribute('aria-hidden', 'true'); } else { bodyEl.removeAttribute('aria-hidden'); }
       });
@@ -376,7 +421,15 @@
   function pathLength(p) {
     try {
       if (!p.getClientRects().length) { return 0; }   /* display:none (the other journey line) */
-      var len = p.getTotalLength();
+      var len;
+      if (getComputedStyle(p).vectorEffect === 'non-scaling-stroke') {
+        /* the journey and steps lines are stretched (preserveAspectRatio none): their dash lengths are in screen px,
+           so the length is the rendered box, not the viewBox units of getTotalLength() */
+        var b = p.getBoundingClientRect();
+        len = Math.max(b.width, b.height);
+      } else {
+        len = p.getTotalLength();
+      }
       return (isFinite(len) && len > 0) ? len : 0;
     } catch (e) { return 0; }
   }
@@ -399,6 +452,8 @@
     html.classList.add('motion');
     html.classList.remove('reduced');
     dashPaths = [];
+    revealTweens = [];
+    $$('.hero__cloud[data-layer]').forEach(layerSrc);   /* the clouds are requested only now */
     ctx = gsap.context(function () {
 
       /* ---------------------------------------------------------
@@ -488,7 +543,7 @@
           var s = SPEED[el.getAttribute('data-layer')];
           if (typeof s === 'undefined') { return; }
           gsap.to(el, {
-            y: function () { return Math.max(-scrollDist() * s, -BRANCH_MAX()); },
+            y: function () { return Math.max(-scrollDist() * s, -BRANCH_MAX(el)); },
             ease: 'none',
             scrollTrigger: { trigger: body, start: 'top top', end: 'bottom bottom', scrub: true, invalidateOnRefresh: true }
           });
@@ -535,11 +590,11 @@
          10. images scale 1.02 -> 1 on reveal; .stagger children stagger.
          --------------------------------------------------------- */
       $$('.reveal').forEach(function (el) {
-        gsap.to(el, {
+        revealTweens.push({ el: el, tw: gsap.to(el, {
           opacity: 1, y: 0, duration: 0.9, ease: 'power2.out',
           scrollTrigger: { trigger: el, start: 'top 88%', once: true },
           onComplete: function () { el.classList.add('is-in'); }
-        });
+        }) });
       });
       $$('.reveal-img').forEach(function (el) {
         gsap.to(el, {
@@ -548,15 +603,33 @@
         });
       });
       $$('.stagger').forEach(function (group) {
-        gsap.to(group.children, {
+        revealTweens.push({ el: group, tw: gsap.to(group.children, {
           opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', stagger: 0.08,
           scrollTrigger: { trigger: group, start: 'top 88%', once: true }
-        });
+        }) });
       });
     });
     ScrollTrigger.addEventListener('refreshInit', remeasureDash);
     ScrollTrigger.refresh();
   }
+
+  /* a control reached by the keyboard (a link, the form, an accordion trigger) is shown at once, together with every
+     hidden .reveal / .stagger ancestor, instead of waiting for its scroll position */
+  var revealTweens = [];
+  document.addEventListener('focusin', function (e) {
+    if (!motionOn || !revealTweens.length) { return; }
+    var el = e.target;
+    while (el && el !== body) {
+      for (var i = 0; i < revealTweens.length; i++) {
+        if (revealTweens[i].el === el && revealTweens[i].tw.progress() < 1) { revealTweens[i].tw.progress(1); }
+      }
+      el = el.parentElement;
+    }
+  });
+  /* a <details> opening or closing changes the page height: every trigger below it is re-measured */
+  $$('details').forEach(function (d) {
+    d.addEventListener('toggle', function () { if (motionOn) { ScrollTrigger.refresh(); } });
+  });
 
   function killMotion() {
     if (!motionOn) { return; }
@@ -565,6 +638,7 @@
     if (ctx) { ctx.revert(); ctx = null; }   /* every tween, trigger and inline style it set */
     dashPaths.forEach(function (d) { d.p.style.strokeDasharray = ''; d.p.style.strokeDashoffset = ''; });
     dashPaths = [];
+    revealTweens = [];
     if (frame) { $$('img[data-layer]', frame).forEach(function (el) { el.style.transform = ''; }); }   /* the sway and parallax leave an identity transform behind */
     if (morph) { morph.classList.remove('is-on'); morph.classList.remove('is-built'); morph.removeAttribute('style'); }
     if (header) { header.classList.remove('logo-docked'); }
@@ -575,11 +649,14 @@
   }
 
   /* ---------------------------------------------------------
-     Pause motion / Play motion (the control in the header bar)
-     and the prefers-reduced-motion change event. Pause stops the
-     video, the branch sway and parallax, the clouds, the morph
-     and the reveals; Play rebuilds them (the video only, under
-     reduced motion).
+     Pause motion / Play motion (the control in the header bar
+     of every page) and the prefers-reduced-motion change event.
+     Pause stops the video, the branch sway and parallax, the
+     clouds, the morph and the reveals; Play rebuilds them (the
+     video only, under reduced motion). The visitor's press is
+     kept for the session. An OS change to reduced motion at
+     runtime also destroys Lenis; when motion returns, Lenis and
+     (unless the visitor pressed Pause) the motion come back.
      --------------------------------------------------------- */
   function pauseAll() {
     userPaused = true;
@@ -595,11 +672,21 @@
   }
   if (heroToggle) {
     setToggle();
-    heroToggle.addEventListener('click', function () { if (userPaused) { playAll(); } else { pauseAll(); } });
+    heroToggle.addEventListener('click', function () {
+      pressedPause = !userPaused;
+      writeChoice(pressedPause ? 'paused' : 'playing');
+      if (userPaused) { playAll(); } else { pauseAll(); }
+    });
   }
   onMQ(rmq, function (e) {
     reduced = e.matches;
-    if (reduced) { pauseAll(); }
+    if (reduced) {
+      pauseAll();
+      stopLenis();
+    } else {
+      startLenis();
+      if (!pressedPause) { playAll(); }
+    }
   });
 
   /* ---- start ---- */

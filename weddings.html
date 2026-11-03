@@ -13,10 +13,8 @@
 <meta property="og:type" content="website">
 <link rel="canonical" href="https://anarevents.com/weddings.html">
 <script>document.documentElement.classList.add('js')</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="assets/fonts/TTRamillas-Bold.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&display=swap">
+<link rel="preload" href="assets/fonts/NotoNaskhArabic-arabic.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/css/site.css">
 <link rel="icon" href="assets/logo/logo-red.svg" type="image/svg+xml">
 <!-- self-hosted vendors (gsap 3.12.5, ScrollTrigger 3.12.5, lenis 1.1.18), same load order -->
@@ -49,6 +47,8 @@
     </a>
     <div class="site-header__end">
       <a class="site-inquire" href="index.html#inquire">Inquire</a>
+      <!-- Pause motion / Play motion: the branch sway, parallax and reveals (site.js pauseAll); the choice is kept for the session; aria-pressed="true" = paused -->
+      <button class="hero-toggle" type="button" aria-label="Pause motion" aria-pressed="false"><span class="hero-toggle__glyph" aria-hidden="true"></span></button>
     </div>
   </div>
 </header>
@@ -83,7 +83,7 @@
           </div>
         </div>
         <figure class="tradition__media reveal">
-          <div class="window"><img class="reveal-img" src="assets/img/pom-open-closeup.jpg" width="2000" height="1123" alt="An opened pomegranate, seeds packed tight" loading="lazy" decoding="async"></div>
+          <div class="window"><img class="reveal-img" src="assets/img/pom-open-closeup-800.jpg" srcset="assets/img/pom-open-closeup-800.jpg 800w, assets/img/pom-open-closeup-1200.jpg 1200w, assets/img/pom-open-closeup.jpg 2000w" sizes="(min-width:536px) 440px, calc(100vw - 96px)" width="2000" height="1123" alt="An opened pomegranate, seeds packed tight" loading="lazy" decoding="async"></div>
           <figcaption class="caption">The sofreh is ready. Your grandparents are seated.</figcaption>
         </figure>
       </div>
@@ -106,7 +106,7 @@
           </div>
         </div>
         <figure class="tradition__media reveal">
-          <div class="window"><img class="reveal-img" src="assets/img/pom-in-hand.jpg" width="1500" height="2000" alt="A pomegranate held in an open hand" loading="lazy" decoding="async"></div>
+          <div class="window"><img class="reveal-img" src="assets/img/pom-in-hand-800.jpg" srcset="assets/img/pom-in-hand-800.jpg 800w, assets/img/pom-in-hand-1200.jpg 1200w, assets/img/pom-in-hand.jpg 1500w" sizes="(min-width:536px) 440px, calc(100vw - 96px)" width="1500" height="2000" alt="A pomegranate held in an open hand" loading="lazy" decoding="async"></div>
           <figcaption class="caption">Quiet, exact, unhurried.</figcaption>
         </figure>
       </div>
@@ -129,7 +129,7 @@
           </div>
         </div>
         <figure class="tradition__media reveal">
-          <div class="window"><img class="reveal-img" src="assets/img/pom-pile.jpg" width="1411" height="2000" alt="A pile of pomegranates" loading="lazy" decoding="async"></div>
+          <div class="window"><img class="reveal-img" src="assets/img/pom-pile-800.jpg" srcset="assets/img/pom-pile-800.jpg 800w, assets/img/pom-pile-1200.jpg 1200w, assets/img/pom-pile.jpg 1411w" sizes="(min-width:536px) 440px, calc(100vw - 96px)" width="1411" height="2000" alt="A pile of pomegranates" loading="lazy" decoding="async"></div>
           <figcaption class="caption">Both families, one dance floor.</figcaption>
         </figure>
       </div>
@@ -152,7 +152,7 @@
           </div>
         </div>
         <figure class="tradition__media reveal">
-          <div class="window"><img class="reveal-img" src="assets/img/pom-tree-night.jpg" width="1125" height="2000" alt="A pomegranate tree at night" loading="lazy" decoding="async"></div>
+          <div class="window"><img class="reveal-img" src="assets/img/pom-tree-night-800.jpg" srcset="assets/img/pom-tree-night-800.jpg 800w, assets/img/pom-tree-night.jpg 1125w" sizes="(min-width:536px) 440px, calc(100vw - 96px)" width="1125" height="2000" alt="A pomegranate tree at night" loading="lazy" decoding="async"></div>
           <figcaption class="caption">From the sacred vows to the last song.</figcaption>
         </figure>
       </div>
@@ -174,7 +174,7 @@
   </section>
 
   <!-- Static leaf band: the foot of the page content, above the CTA band -->
-  <div class="leaf-band" aria-hidden="true"><img src="assets/tree/painted/bottom-canopy.webp" srcset="assets/tree/painted/bottom-canopy-1400.webp 1400w, assets/tree/painted/bottom-canopy.webp 2752w" sizes="100vw" width="2752" height="1536" alt="" loading="lazy" decoding="async"></div>
+  <div class="leaf-band" aria-hidden="true"><img src="assets/tree/painted/bottom-canopy.webp" srcset="assets/tree/painted/bottom-canopy-700.webp 700w, assets/tree/painted/bottom-canopy-1400.webp 1400w, assets/tree/painted/bottom-canopy.webp 2752w" sizes="100vw" width="2752" height="1536" alt="" loading="lazy" decoding="async"></div>
 
   <!-- CTA bar ("Poster"): cream inset frame, wordmark on top, the Persian tagline sits inside the kashida line. -->
   <section class="cta cta--poster on-brown" id="cta" aria-labelledby="cta-title-a">
@@ -194,7 +194,7 @@
 </main>
 
 <footer class="site-footer on-brown">
-  <div class="ground-band" aria-hidden="true"><img src="assets/tree/painted/ground-bottom.webp" srcset="assets/tree/painted/ground-bottom-1400.webp 1400w, assets/tree/painted/ground-bottom.webp 2752w" sizes="100vw" width="2752" height="1536" alt="" loading="lazy" decoding="async"></div>
+  <div class="ground-band" aria-hidden="true"><img src="assets/tree/painted/ground-bottom.webp" srcset="assets/tree/painted/ground-bottom-700.webp 700w, assets/tree/painted/ground-bottom-1400.webp 1400w, assets/tree/painted/ground-bottom.webp 2752w" sizes="100vw" width="2752" height="1536" alt="" loading="lazy" decoding="async"></div>
   <div class="container site-footer__inner">
     <div class="site-footer__grid">
       <div class="site-footer__brand">

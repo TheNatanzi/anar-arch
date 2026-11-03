@@ -8,6 +8,8 @@
    (body, eyebrows, captions, quote, notes, form controls, buttons). Hierarchy comes from size, tracking and colour.
    Persian stays Noto Naskh Arabic. */
 @font-face{font-family:"TT Ramillas";src:url("../fonts/TTRamillas-Bold.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+/* Noto Naskh Arabic: the Arabic-subset variable file from Google Fonts (one woff2 covers 400-700), self-hosted so no cross-origin CSS blocks render */
+@font-face{font-family:"Noto Naskh Arabic";src:url("../fonts/NotoNaskhArabic-arabic.woff2") format("woff2");font-weight:400 700;font-style:normal;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+0870-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
 
 /* ---------- Tokens ---------- */
 :root{
@@ -58,6 +60,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .skip-link:focus{top:var(--s2)}
 /* same-page anchors (skip link, #inquire, #cta) land below the fixed header; the destination takes focus (site.js) */
 main,section[id],[id].section,.form__status{scroll-margin-top:calc(var(--header-h) + 8px)}
+/* the two inquiry destinations land a full 24px below the bar (site.js reads this margin for the Lenis offset) */
+#inquire,[id].cta--poster{scroll-margin-top:calc(var(--header-h) + 24px)}
 main:focus,section:focus{outline:none}
 
 /* ---------- Type ---------- */
@@ -133,6 +137,8 @@ main{position:relative;z-index:2}
 .logo-morph__cream{filter:drop-shadow(0 4px 24px rgba(67,38,23,.45))}
 .logo-morph__red{opacity:0}
 .motion .page-index .logo-morph.is-on{display:block}
+/* the phone drawer open mid-morph: the travelling wordmark hides and the docked header logo is the only one (closing restores it) */
+.site-header.nav-open + .logo-morph.is-on{display:none}
 /* the in-flow <h1> stays in the accessibility tree (opacity, never visibility) while the morph layer draws it */
 .motion .page-index .logo-morph.is-built ~ main .hero__word{opacity:0}
 /* the nav links are visible by default (no JS, or before site.js wires the drawer); on phones they collapse into the
@@ -176,9 +182,9 @@ main{position:relative;z-index:2}
   html.nav-ready .site-header.nav-open .site-nav a{font-size:24px}
 }
 /* solid state (inner pages, index once scrolled, and the phone drawer open over the hero) */
-.site-header--solid,.site-header.is-scrolled{background:var(--cream);color:var(--brown);box-shadow:0 1px 0 rgba(67,38,23,.08)}
+.site-header--solid,.site-header.is-scrolled{background:var(--cream);color:var(--brown);box-shadow:none}
 /* the phone drawer open over the hero: cream bar, brown text (the morph tween writes inline colours, hence !important) */
-.site-header--over.nav-open{background:var(--cream)!important;color:var(--brown)!important;box-shadow:0 1px 0 rgba(67,38,23,.08)}
+.site-header--over.nav-open{background:var(--cream)!important;color:var(--brown)!important;box-shadow:none}
 .site-header--over.nav-open .site-logo{visibility:visible}
 .site-header--over.nav-open .site-logo__red{display:block}
 .site-header--over.nav-open .site-logo__cream{display:none}
@@ -204,6 +210,8 @@ main{position:relative;z-index:2}
 .tree-frame{--art-stop:max(0px,calc(min(calc((100vw - var(--narrow)) / 2),calc(max(0px,(100vw - var(--container)) / 2) + var(--gutter))) - 40px));position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden}
 .tree-frame img{position:absolute;display:block;will-change:transform;max-width:none}
 .tree-frame [data-layer="leftBranch"],.tree-frame [data-layer="rightBranch"]{top:25vh;width:clamp(220px,26vw,520px);height:auto;display:none;opacity:.9}
+/* the right branch sits lower (38vh) at .9 scale so the two never mirror; site.js reads each branch's top for its parallax limit */
+.tree-frame [data-layer="rightBranch"]{top:38vh;width:calc(clamp(220px,26vw,520px) * .9)}
 /* the sway (site.js) pivots each branch where it enters the page */
 .tree-frame [data-layer="leftBranch"]{transform-origin:0% 50%}
 .tree-frame [data-layer="rightBranch"]{transform-origin:100% 50%}
@@ -212,11 +220,12 @@ main{position:relative;z-index:2}
 @media (min-width:768px){
   .tree-frame [data-layer="leftBranch"],.tree-frame [data-layer="rightBranch"]{display:block}
 }
-/* phones: one branch tip only (the left one, 150px, at 60vh, opacity .8), shifted 56px off the edge so its leafy
-   middle is what shows; the mask ends 24px before the text column (the gutter), measured in the image's own box */
+/* phones: one branch tip only (the left one, 200px, at 60vh, opacity .8), shifted 32px off the edge so a leafy tip
+   shows; the mask starts fading 24px before the text column (the gutter) and is fully transparent at its edge,
+   measured in the image's own box, so nothing is ever painted under text */
 @media (max-width:767.98px){
-  .tree-frame{--phone-shift:56px;--art-stop:calc(var(--gutter) - 24px + var(--phone-shift))}
-  .tree-frame [data-layer="leftBranch"]{display:block;width:150px;top:60vh;left:calc(-1 * var(--phone-shift));opacity:.8;-webkit-mask-image:linear-gradient(to right,#000 calc(var(--art-stop) - 16px),transparent var(--art-stop));mask-image:linear-gradient(to right,#000 calc(var(--art-stop) - 16px),transparent var(--art-stop))}
+  .tree-frame{--phone-shift:32px;--art-stop:calc(var(--gutter) + var(--phone-shift))}
+  .tree-frame [data-layer="leftBranch"]{display:block;width:200px;top:60vh;left:calc(-1 * var(--phone-shift));opacity:.8;-webkit-mask-image:linear-gradient(to right,#000 calc(var(--art-stop) - 24px),transparent var(--art-stop));mask-image:linear-gradient(to right,#000 calc(var(--art-stop) - 24px),transparent var(--art-stop))}
 }
 /* ---------- Static art bands (in flow, nothing ever sits on them) ----------
    The leaf band sits at the foot of the page content, directly above the brown CTA band;
@@ -238,9 +247,9 @@ main{position:relative;z-index:2}
 .hero__cloud{position:absolute;left:-10vw;bottom:-10vh;width:120vw;height:auto;pointer-events:none;opacity:0}
 .hero__cloud--2{left:-20vw;width:140vw;bottom:-18vh}
 /* phone: 12vh so the stacked tagline (up to three lines) never touches the wordmark; the soft shadow lifts the cream word off bright video */
-.hero__word{position:absolute;left:50%;bottom:12vh;transform:translateX(-50%);width:min(92vw,1100px);margin:0;filter:drop-shadow(0 4px 24px rgba(67,38,23,.45))}
+.hero__word{position:absolute;left:50%;bottom:calc(12vh + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(92vw,1100px);margin:0;filter:drop-shadow(0 4px 24px rgba(67,38,23,.45))}
 .hero__word img{width:100%;height:auto}
-.hero__tag{position:absolute;left:0;right:0;bottom:2vh;text-align:center;font-size:16px;line-height:24px;letter-spacing:0;padding-inline:var(--s1);text-shadow:0 1px 6px rgba(67,38,23,.6)}
+.hero__tag{position:absolute;left:0;right:0;bottom:calc(2vh + env(safe-area-inset-bottom,0px));text-align:center;font-size:16px;line-height:24px;letter-spacing:0;padding-inline:var(--s1);text-shadow:0 1px 6px rgba(67,38,23,.6)}
 .hero__tag .fa{font-size:16px;line-height:24px}
 /* phone: Persian and English on their own lines */
 .hero__tag .fa,.hero__tag__en{display:block}
@@ -248,8 +257,8 @@ main{position:relative;z-index:2}
 .hero__fade{position:absolute;inset:0;background:var(--cream);opacity:0;pointer-events:none}
 @media (min-width:768px){
   .hero__shade,.hero__window{top:10vh;width:min(44vw,560px);max-height:70vh}
-  .hero__word{bottom:8vh}
-  .hero__tag{bottom:3vh;letter-spacing:.02em;padding-inline:var(--s2)}
+  .hero__word{bottom:calc(8vh + env(safe-area-inset-bottom,0px))}
+  .hero__tag{bottom:calc(3vh + env(safe-area-inset-bottom,0px));letter-spacing:.02em;padding-inline:var(--s2)}
   .hero__tag .fa,.hero__tag__en,.hero__tag__sep{display:inline}
 }
 
@@ -293,7 +302,9 @@ main{position:relative;z-index:2}
   .accordion__panel:not(.is-open) .accordion__media::after{background:linear-gradient(to top,rgba(67,38,23,.7) 0%,rgba(67,38,23,.15) 100%)}
   .accordion__panel:not(.is-open) .accordion__body{opacity:0;transition:opacity .25s}
   .accordion__panel.is-open .accordion__body{opacity:1;transition:opacity .6s .25s}
-  .accordion__panel:not(.is-open) .accordion__label{display:block;writing-mode:vertical-rl;transform:rotate(180deg);left:auto;right:50%;top:auto;bottom:var(--s3);transform-origin:center;transform:translateX(50%) rotate(180deg)}
+  .accordion__panel:not(.is-open) .accordion__label{display:block;writing-mode:vertical-rl;transform:rotate(180deg);left:auto;right:50%;top:auto;bottom:40px;transform-origin:center;transform:translateX(50%) rotate(180deg)}
+  /* a collapsed strip says it opens: a small amber "+" at its foot, under the vertical label */
+  .accordion__panel:not(.is-open)::after{content:"+";position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:1;color:var(--amber);font-size:20px;line-height:20px;pointer-events:none}
   .accordion__body{padding:var(--s4) var(--s3) var(--s3)}
 }
 
@@ -305,6 +316,9 @@ main{position:relative;z-index:2}
 .quote figcaption{font-size:16px;letter-spacing:.04em;color:var(--muted)}
 
 /* ---------- Journey ---------- */
+/* the nine columns run wider than the text column the fixed branches are masked for, so the section carries its own
+   cream ground (fading in over the first 96px and out over the last, so a branch is never hard-cut at the edge) */
+.journey{position:relative;z-index:3;background:linear-gradient(to bottom,rgba(240,230,213,0) 0,var(--cream) 96px,var(--cream) calc(100% - 96px),rgba(240,230,213,0) 100%)}
 .journey__track{position:relative}
 .journey__line{position:absolute;pointer-events:none}
 .journey__line path{fill:none;stroke:var(--red);stroke-width:2;vector-effect:non-scaling-stroke}
@@ -342,7 +356,7 @@ main{position:relative;z-index:2}
 .field label,.fieldset legend{font-weight:700;font-size:16px;line-height:22px}
 .field__req{font-size:13px;letter-spacing:.04em;color:var(--muted);margin-left:6px}
 .field__help{font-size:14px;line-height:20px;color:var(--muted)}
-.field input,.field textarea,.field select{font:inherit;color:var(--brown);background:transparent;border:1px solid var(--brown);border-radius:2px;padding:12px 14px;width:100%}
+.field input,.field textarea,.field select{font:inherit;color:var(--brown);background:transparent;border:2px solid var(--brown);border-radius:2px;padding:11px 13px;width:100%}
 .field input,.field select{height:54px;line-height:28px}
 .field input::placeholder,.field textarea::placeholder{color:var(--muted);opacity:.8}
 .field input:focus-visible,.field textarea:focus-visible,.field select:focus-visible{outline:2px solid var(--red);outline-offset:2px}
@@ -352,7 +366,10 @@ main{position:relative;z-index:2}
 .checks{display:grid;gap:0 var(--s1);grid-template-columns:1fr}
 @media (min-width:600px){.checks{grid-template-columns:repeat(3,1fr)}}
 .check{display:flex;gap:10px;align-items:center;font-size:16px;line-height:22px;min-height:44px}
-.check input{width:18px;height:18px;accent-color:var(--red);margin:0}
+/* custom box in the 2px system: brown fill with a cream tick when checked */
+.check input{appearance:none;-webkit-appearance:none;flex:0 0 auto;width:18px;height:18px;margin:0;border:2px solid var(--brown);border-radius:2px;background:transparent center/12px 12px no-repeat;cursor:pointer}
+.check input:checked{background-color:var(--brown);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6.5l2.6 2.6L10 3.5' fill='none' stroke='%23F0E6D5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.check input:focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .form__note{font-size:14px;line-height:20px;color:var(--muted)}
 .form__note a{border-bottom:1px solid currentColor}
 /* pending / sent / failed states, announced by the role="status" region */
@@ -377,9 +394,8 @@ main{position:relative;z-index:2}
 .cta__contact a{border-bottom:1px solid transparent;transition:border-color .3s,color .3s}
 .cta__contact a:hover{color:var(--cream);border-bottom-color:var(--amber)}
 /* CTA "Poster": 2px cream inset frame, wordmark on top, the tagline inside the amber kashida line.
-   The top padding carries the fixed header's height, so the cream wordmark never sits under the bar at any scroll stop;
-   the anchor's scroll margin matches the header the same way. */
-.cta--poster{padding-top:calc(var(--header-h) + clamp(48px,8vh,80px));padding-bottom:clamp(64px,10vh,112px);scroll-margin-top:calc(var(--header-h) + 8px)}
+   The anchor's scroll margin (header + 24px, set with #inquire above) keeps the wordmark clear of the bar when linked to. */
+.cta--poster{padding-top:clamp(48px,8vh,80px);padding-bottom:clamp(64px,10vh,112px)}
 .cta--poster::before{content:"";position:absolute;inset:16px;border:2px solid var(--cream);pointer-events:none}
 @media (min-width:768px){.cta--poster::before{inset:24px}}
 .cta--poster .container{position:relative;z-index:1}
