@@ -123,14 +123,8 @@
   {
    "page": "index.html",
    "view": "w1440",
-   "element": "#cta-a",
-   "file": "cta-A.jpg"
-  },
-  {
-   "page": "index.html",
-   "view": "w1440",
-   "element": "#cta-b",
-   "file": "cta-B.jpg"
+   "element": "#cta",
+   "file": "cta.jpg"
   },
   {
    "page": "index.html",

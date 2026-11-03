@@ -37,7 +37,7 @@ with sync_playwright() as p:
             pg.wait_for_timeout(1600)
             el.screenshot(path=str(OUT / f'{name}.jpg'), type='jpeg', quality=85); manifest.append({'page': 'index.html', 'view': f'w{w}', 'element': sel, 'file': f'{name}.jpg'})
         ctx.close()
-    element_shots(1440, 900, [('#cta-a', 'cta-A'), ('#cta-b', 'cta-B'), ('.leaf-band', 'leaf-band'), ('.site-footer', 'footer-desktop')])
+    element_shots(1440, 900, [('#cta', 'cta'), ('.leaf-band', 'leaf-band'), ('.site-footer', 'footer-desktop')])
     element_shots(390, 844, [('.site-footer', 'footer-phone')])
     b.close()
 srv.shutdown()

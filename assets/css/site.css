@@ -297,7 +297,7 @@ main{position:relative;z-index:2}
 .cta__contact{font-size:15px;line-height:22px;letter-spacing:.02em;color:rgba(240,230,213,.8);display:flex;flex-wrap:wrap;justify-content:center;gap:0 12px}
 .cta__contact a{border-bottom:1px solid transparent;transition:border-color .3s,color .3s}
 .cta__contact a:hover{color:var(--cream);border-bottom-color:var(--amber)}
-/* Variant A "Poster": 1px cream inset frame, wordmark on top, the tagline inside the kashida line */
+/* CTA "Poster": 1px cream inset frame, wordmark on top, the tagline inside the kashida line */
 .cta--poster{padding-block:clamp(96px,16vh,180px)}
 .cta--poster::before{content:"";position:absolute;inset:16px;border:1px solid var(--cream);pointer-events:none}
 @media (min-width:768px){.cta--poster::before{inset:24px}}
@@ -307,15 +307,6 @@ main{position:relative;z-index:2}
 .kashida-tagline{display:flex;align-items:center;gap:clamp(14px,2vw,24px);width:min(100%,760px);margin:0 auto clamp(20px,3vh,28px)}
 .kashida-tagline::before,.kashida-tagline::after{content:"";flex:1 1 0;height:2px;background:var(--cream)}
 .kashida-tagline .fa{flex:0 0 auto;white-space:nowrap;margin:0;line-height:1.4}
-/* Variant B "Mark": the painted split pomegranate above the title, Persian right-aligned on a short kashida, cream rules top and bottom */
-.cta--mark{border-top:1px solid var(--cream);border-bottom:1px solid var(--cream)}
-.cta__mark{width:120px;height:auto;display:block;margin:0 auto clamp(24px,4vh,40px)}
-.cta__titleblock{display:inline-grid;justify-items:stretch;margin-bottom:clamp(24px,4vh,36px)}
-.cta--mark .cta__title{margin-bottom:var(--s1)}
-.cta__fa-row{display:flex;align-items:center;justify-content:flex-end;gap:16px}
-.cta__fa-row::before{content:"";width:clamp(48px,8vw,96px);height:2px;background:var(--cream)}
-.cta__fa-row .fa{margin:0;line-height:1.4}
-.btn--amber:hover{background:var(--amber)}
 /* Footer: the painted ground band sits ABOVE the grid; the grid is 3 columns on a 24px baseline, 64px top/bottom, 48px column gap */
 .site-footer{position:relative;z-index:2;background:var(--brown);color:var(--cream);border-top:2px solid rgba(240,230,213,.25)}
 .site-footer__inner{padding-block:64px}
