@@ -562,3 +562,5 @@ html.paused .accordion__panel,html.paused .accordion__media img,html.paused .acc
   *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}
   .tree-frame img{transform:none!important}
 }
+
+html:not(.js) .tree-frame{display:none}

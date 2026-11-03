@@ -1,0 +1,38 @@
+{
+ "model": "fable",
+ "role": "dev",
+ "score": 8,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "index.html head (after the two font preloads)",
+   "what": "Add <link rel=\"preload\" as=\"image\" href=\"assets/video/hero-poster-small.jpg\" fetchpriority=\"high\"> and put it before the font preloads",
+   "why": "The poster is the LCP element on every index load (video arrives only after window load) yet it queues behind two fonts and the CSS."
+  },
+  {
+   "where": "assets/js/site.js block 6 (form submit) + site.css .field",
+   "what": "On each required input listen for 'invalid' and 'input': set aria-invalid=\"true\"/remove it, and write a persistent .field__error line (e.g. 'Enter your email') linked by aria-describedby; keep reportValidity() as the fallback",
+   "why": "Native bubbles vanish after a second and are not announced reliably; the brief asks for judged validation and error states."
+  },
+  {
+   "where": "assets/css/site.css .section / .journey (phones, max-width:767.98px)",
+   "what": "Reduce stacked section padding on phones: .section{padding-block:clamp(56px,8vh,80px)} and drop the journey's bottom gradient zone to 48px, so journey→Inquire is ~110px, not ~230px",
+   "why": "Phone shot 3 shows a third of a screen of empty cream between the last stop and the Inquire eyebrow."
+  },
+  {
+   "where": "assets/js/site.js loadHeroVideo() / wideScreen()",
+   "what": "Serve hero-1080-loop.mp4 only when (min-width:1280px) AND devicePixelRatio>=1.5 (or min-width:1600px); everything else gets the 720 loop",
+   "why": "A 1024px laptop at 1x pulls the 2.5 MB file where the 1.2 MB 720 loop is visually identical in a 560px arch."
+  },
+  {
+   "where": "index.html #f-date and #f-guests",
+   "what": "Set min on the date input to today (one line in site.js: input.min = new Date().toISOString().slice(0,10)) and add max=\"2000\" to guest count",
+   "why": "Past wedding dates and absurd counts pass validation today; two attributes close it."
+  },
+  {
+   "where": "assets/css/site.css .form__row / .field__help",
+   "what": "Move the help line under the input (order:3 in the .field grid) so paired labels sit on one baseline, instead of bottom-aligning only the inputs",
+   "why": "Desktop shot 3: 'Your names' label floats 28px above 'Email' label; the row reads misaligned even though the inputs line up."
+  }
+ ]
+}

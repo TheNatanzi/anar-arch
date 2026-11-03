@@ -1,0 +1,36 @@
+{
+ "model": "astra",
+ "role": "brand",
+ "score": 7,
+ "blocking": [
+  "The accent palette substitutes burgundy #9E1B32 for the specified Anar red #D10C0C.",
+  "At 390px, the arch and wordmark feel disconnected: roughly 150px of empty video separates them, weakening the intended hero composition."
+ ],
+ "fixes": [
+  {
+   "where": "assets/css/site.css — :root; assets/logo/logo-red.svg",
+   "what": "Set --red to #D10C0C and verify the supplied red wordmark artwork uses the same approved red.",
+   "why": "The current burgundy gives the identity a materially different character."
+  },
+  {
+   "where": "assets/css/site.css — mobile .hero__word, .hero__window, .hero__shade",
+   "what": "Position the mobile wordmark relative to the arch bottom so its Latin lettering overlaps the lower arch by approximately 24–40px; preserve separate clearance for the tagline.",
+   "why": "The desktop composition is integrated; the phone composition currently reads as two unrelated blocks."
+  },
+  {
+   "where": "assets/css/site.css — .pillar, .options > li, .you-get li, .behaviour li",
+   "what": "Remove repeated card-top borders and retain grouping through spacing; reserve lines for the kashida, journey, form controls and poster frame.",
+   "why": "Repeated rules across columns introduce the grid-line aesthetic the brand brief excludes."
+  },
+  {
+   "where": "assets/css/site.css — #celebrations and .quote section padding",
+   "what": "Reduce the combined space between the celebrations link and founder quotation to approximately 96–120px on desktop.",
+   "why": "The supplied desktop view leaves over 200px before the quotation, interrupting the editorial rhythm."
+  },
+  {
+   "where": "assets/css/site.css — .container and .container--text",
+   "what": "Define a shared desktop content edge, accounting for padding inside max-width, and align the celebrations strip with the adjacent text sections.",
+   "why": "The strip starts around x328 while the text starts around x340; the near-alignment looks accidental."
+  }
+ ]
+}

@@ -1,0 +1,40 @@
+{
+ "model": "fable",
+ "role": "planner",
+ "score": 7,
+ "blocking": [
+  "index.html journey: Mehndi (stop 7) comes after Aghd / Nikah (stop 6). In Persian, Afghan and South Asian families the henna night precedes the ceremony; a site that promises 'fluent in the unspoken details' cannot show the rituals out of order."
+ ],
+ "fixes": [
+  {
+   "where": "index.html, section#journey, .journey__stops li 6-7",
+   "what": "Swap the Mehndi stop before the Aghd / Nikah stop (order: Khastegari, Mehndi, Aghd / Nikah, Reception, Thank-you).",
+   "why": "Hanabandan / mehndi / sangeet happen the night(s) before the aghd or nikah in every culture the site serves."
+  },
+  {
+   "where": "index.html, journey stop 'Aghd / Nikah' note",
+   "what": "Change the note to 'The sofreh and the mirror, or the contract read before witnesses.'",
+   "why": "'The sofreh unveiled and the mirror moment' is Persian-only; Afghan and South Asian nikah families see their ceremony described as someone else's."
+  },
+  {
+   "where": "weddings.html, section#mehndi-sangeet, second paragraph",
+   "what": "Move 'the baraat that arrives with music' out of the Mehndi & Sangeet section into Reception & Walima (or its own line on the wedding day).",
+   "why": "The baraat is the groom's procession on the wedding day, not part of the henna or sangeet night; South Asian parents will spot the slip."
+  },
+  {
+   "where": "index.html, journey stops 3 and 5 (.journey__en)",
+   "what": "Label stop 3 'Our proposal' (keep پیشنهاد) so it does not read as a second 'proposal' next to Khastegari, 'The formal proposal visit'.",
+   "why": "Two consecutive 'proposal' stops confuse the English reader; in Persian they are distinct words."
+  },
+  {
+   "where": "index.html hero, .hero__word (desktop, min-width:768px)",
+   "what": "Reduce the desktop wordmark to width:min(80vw,920px) or push .hero__shade/.hero__window max-height to 60vh so the word sits across the foot of the arch, not over the table setting.",
+   "why": "On desktop the wordmark hides the lower third of the footage; the footage is the only taste proof on the page."
+  },
+  {
+   "where": "index.html, after section.quote (founder quote)",
+   "what": "Add a hidden, data-owner-input='proof' block like about.html's bio slot (one line: weddings run since YEAR, one family quote), to be unhidden when the owner supplies it.",
+   "why": "The home page has no proof slot at all; parents deciding who to trust need one place where numbers and a family's words will land."
+  }
+ ]
+}

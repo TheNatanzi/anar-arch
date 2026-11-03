@@ -1,0 +1,28 @@
+{
+ "model": "astra",
+ "role": "planner",
+ "score": 8,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "index.html — #journey",
+   "what": "Keep all nine stops, but place the existing qualification from How we work beside the journey: ceremonies are chosen and ordered with each family. Link it to how-we-work.html#steps.",
+   "why": "The numbered sequence currently reads as a universal itinerary, including Khastegari and a combined Aghd/Nikah stop described only through a sofreh."
+  },
+  {
+   "where": "index.html — #journey, Consultation stop",
+   "what": "Surface the existing couple-controlled parent-involvement guidance beside the journey, with a link to the consultation details.",
+   "why": "Parents receive strong reassurance on the homepage; couples must visit another page to discover that they control who participates and decides."
+  },
+  {
+   "where": "index.html — #journey, Planning stop; weddings.html — language promises",
+   "what": "Place the existing language-support qualification next to the promises about planning and naming items in both languages; link to the language FAQ.",
+   "why": "Unqualified bilingual promises can create expectations that exceed the explicitly agreed translation and spoken support described elsewhere."
+  },
+  {
+   "where": "index.html — #inquire introduction",
+   "what": "Add a clearly visible link to how-we-work.html#you-get before the form, using the existing service names: Full planning and Wedding-day coordination.",
+   "why": "Families can reach the inquiry form without discovering the two service options or when each begins."
+  }
+ ]
+}

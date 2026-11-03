@@ -1,0 +1,37 @@
+{
+ "model": "astra",
+ "role": "dev",
+ "score": 7,
+ "blocking": [
+  "A saved 'playing' preference bypasses reduced-motion and Save-Data checks for automatic video loading on subsequent visits.",
+  "Without JavaScript, desktop celebration panels remain visually collapsed and their buttons cannot reveal the content.",
+  "The desktop accordion can clip its text in short landscape viewports because its height is viewport-capped and each panel hides overflow."
+ ],
+ "fixes": [
+  {
+   "where": "assets/js/site.js — userPaused initialization and loadHeroVideo",
+   "what": "Always honor reduced motion and Save-Data on page load, regardless of a saved 'playing' preference. Allow video playback only after an explicit Play action on that page.",
+   "why": "An earlier session preference should not silently override the visitor's current system or data settings."
+  },
+  {
+   "where": "assets/css/site.css — desktop accordion; assets/js/site.js — accordion initialization",
+   "what": "Default to fully visible celebration cards. Apply collapsing styles and expose overlay buttons only after adding an accordion-ready class when handlers are installed.",
+   "why": "Script failure currently leaves three descriptions invisible and the controls nonfunctional."
+  },
+  {
+   "where": "assets/css/site.css — .accordion and .accordion__panel",
+   "what": "Replace the rigid desktop height cap with a content-safe minimum height; switch to stacked cards for short landscape viewports. Verify all four panels at 768×400 and with enlarged text.",
+   "why": "Overflow hiding can cut off descriptions even when the page has no horizontal overflow."
+  },
+  {
+   "where": "assets/js/site.js — pauseAll/playAll; assets/css/site.css — motion transitions",
+   "what": "Stop Lenis when Pause motion is selected, use immediate anchor scrolling while paused, and disable accordion expansion and hover movement transitions in that state. Restore them on Play when permitted.",
+   "why": "The control promises to pause motion but currently leaves smooth scrolling and CSS movement active."
+  },
+  {
+   "where": "assets/css/site.css — :root --red",
+   "what": "Change --red from #9E1B32 to the specified #D10C0C and check the logo SVG fills for consistency.",
+   "why": "The implemented accent token differs from the supplied brand specification."
+  }
+ ]
+}

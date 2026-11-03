@@ -1,0 +1,18 @@
+{
+ "model": "argon",
+ "role": "planner",
+ "score": 9.5,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "assets/css/site.css (.cta--poster)",
+   "what": "Increase top padding on desktop (`@media (min-width:768px) { .cta--poster { padding-top: clamp(72px, 12vh, 112px); } }`)",
+   "why": "In desktop screenshot 4, the fixed header bar cuts across the top half of the white wordmark inside the brown Reimagined Heritage poster frame when scrolled into view."
+  },
+  {
+   "where": "weddings.html (Sofreh Aghd & Nikah sections) and index.html (Traditions fieldset)",
+   "what": "Explicitly name the sugar-rubbing cloth/cones (kalleh ghand / torban) on the Sofreh Aghd page and add 'Aghd' alongside 'Sofreh aghd' or clarify Hindu/Sikh ceremonies (e.g., Anand Karaj / Pheras) if South Asian includes non-Muslim families",
+   "why": "South Asian families span Muslim, Hindu, and Sikh traditions; right now only Nikah and Walima are named alongside Mehndi/Sangeet/Baraat, which may leave Hindu/Sikh Bay Area families wondering if their ceremony is covered."
+  }
+ ]
+}

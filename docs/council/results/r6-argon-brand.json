@@ -1,0 +1,25 @@
+{
+ "model": "argon",
+ "role": "brand",
+ "score": 8,
+ "blocking": [
+  "On desktop (index-desktop-4.jpg), the fixed header covers the top half of the cream wordmark inside the brown 'Reimagined Heritage' poster-frame CTA, and its cream background breaks the continuity of the 2px cream inset border."
+ ],
+ "fixes": [
+  {
+   "where": "assets/css/site.css:383 (.cta--poster)",
+   "what": "Increase `.cta--poster` top padding to `clamp(112px, 15vh, 144px)` and set `.cta--poster::before { top: 24px }` with enough vertical clearance so the fixed 96px header never collides with `.cta__wordmark` or cuts off the top of the 2px inset poster border when scrolled into view.",
+   "why": "In index-desktop-4.jpg, the fixed header slices right through `cta__wordmark` ('ANAR EVENTS' is cut in half) and hides the top edge of the cream poster frame."
+  },
+  {
+   "where": "assets/css/site.css:35 (:root --red)",
+   "what": "Consider adjusting `--red` from `#9E1B32` to match the `#D10C0C` red used inside `logo-red.svg` (or vice-versa).",
+   "why": "The brand rubric specifies red `#D10C0C` (which is baked into the SVG wordmark), whereas CSS rules, eyebrows, and buttons use `#9E1B32` burgundy, creating a subtle two-red mismatch next to the header logo."
+  },
+  {
+   "where": "assets/css/site.css:263 (.accordion__body)",
+   "what": "Add `text-align: right` to `.accordion__body .fa` or keep it aligned with the Persian header convention used across the rest of the site.",
+   "why": "In the celebrations accordion (desktop-2 and phone-2), the Persian title floats to the far right while the English heading sits on the left, feeling disconnected on wide open panels."
+  }
+ ]
+}

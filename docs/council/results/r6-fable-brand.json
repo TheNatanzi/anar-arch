@@ -1,0 +1,38 @@
+{
+ "model": "fable",
+ "role": "brand",
+ "score": 8,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "assets/css/site.css · @media (max-width:767.98px) .tree-frame [data-layer=\"leftBranch\"] (phone branch tip)",
+   "what": "Hide the branch on phones (display:none below 768px) and let the leaf band and ground band carry the painted art; or, if kept, give it a real tip: width 300px, left:-140px, top anchored to a text-free row (e.g. between #who and #pillars), mask unchanged.",
+   "why": "On phone-1/phone-2 the 48px visible sliver at 60vh reads as a stray smudge, not a painted branch; it looks accidental and cheapens the frame."
+  },
+  {
+   "where": "index.html · form first .form__row (Your names / Email) + site.css .form__row",
+   "what": "Move <p class=\"field__help\"> below the input (keep aria-describedby) so both labels in a row share one baseline; keep align-items:end for the inputs.",
+   "why": "Desktop-3: the Names label sits 28px higher than the Email label; the ragged label line breaks the 2px grid discipline the rest of the form keeps."
+  },
+  {
+   "where": "assets/css/site.css · .hero__shade/.hero__window (desktop) and .hero__word",
+   "what": "Separate the arch base from the kashida: desktop .hero__shade,.hero__window{max-height:62vh} and .hero__word{bottom:calc(10vh + env(safe-area-inset-bottom,0px))}, so the arch base ends inside the Latin letters and the Persian kashida line sits ≥120px clear below it.",
+   "why": "Desktop-0: the cream arch base and the cream kashida run as two parallel lines 55px apart with the Persian letters squeezed between; the lockup looks cluttered at the one moment the brand must read cleanest."
+  },
+  {
+   "where": "assets/css/site.css · .journey / .inquire padding on phones",
+   "what": "Below 1024px set .journey{padding-bottom:clamp(40px,6vh,64px)} and .inquire{padding-top:clamp(40px,6vh,64px)} (and shorten the journey's bottom gradient to 48px).",
+   "why": "Phone-3: ~200px of empty cream between the last stop and the Inquire eyebrow; the page stalls right before the conversion section."
+  },
+  {
+   "where": "assets/css/site.css · .pair on phones (Who we are, Inquire eyebrows)",
+   "what": "Below 768px keep the Persian on the same row as the eyebrow: .pair{grid-template-columns:1fr auto;align-items:baseline} with the .fa right-aligned, instead of stacking it on its own right-aligned line.",
+   "why": "Phone-3: 'Inquire' sits left and 'شروع برنامه‌ریزی' sits far right on the next line, reading as two unrelated items rather than one bilingual pair."
+  },
+  {
+   "where": "assets/css/site.css · .pillar__n (Who we are Persian slot)",
+   "what": "Give the Persian word the same left edge as the heading: .pillar__n.fa{text-align:left} (direction stays rtl).",
+   "why": "Desktop-1: آرام/محترم/سربلند hug the right edge while Calm/Respected/Proud hug the left, so each pillar reads as two mis-stacked blocks instead of one."
+  }
+ ]
+}

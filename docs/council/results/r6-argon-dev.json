@@ -1,0 +1,23 @@
+{
+ "model": "argon",
+ "role": "dev",
+ "score": 9,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "assets/css/site.css:362 & assets/js/site.js:468",
+   "what": "Clear the fixed `.site-header` in `#cta` by increasing `.cta--poster` top padding or setting `.cta__wordmark` top margin so the cream wordmark inside `#cta` never clips under the sticky header (visible in `index-desktop-4.jpg`).",
+   "why": "In `index-desktop-4.jpg`, the top of the cream wordmark inside the brown `#cta` poster frame is cut off by the bottom of the fixed cream header bar."
+  },
+  {
+   "where": "assets/js/site.js:354",
+   "what": "In `measure()`, compute `from.y` while `.logo-morph` is not transforming or read `heroWordImg.getBoundingClientRect().top + (window.scrollY || window.pageYOffset) - hero.getBoundingClientRect().top - (window.scrollY || window.pageYOffset)` relative to the hero container.",
+   "why": "Ensures `invalidateOnRefresh` during mid-scroll resizes always measures the exact static document offset of `.hero__word img`."
+  },
+  {
+   "where": "assets/js/site.js:23",
+   "what": "Update `TREE_LAYERS.leftBranch.sizes` from `(min-width:1400px) 520px, (min-width:768px) 26vw, 150px` to `(min-width:1400px) 520px, (min-width:768px) 26vw, 200px`.",
+   "why": "Matches the 200px CSS width of the mobile left branch on viewports under 768px."
+  }
+ ]
+}
