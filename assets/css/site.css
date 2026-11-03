@@ -170,10 +170,12 @@ main{position:relative;z-index:2}
 }
 /* ---------- Static art bands (in flow, nothing ever sits on them) ----------
    The leaf band sits at the foot of the page content, directly above the brown CTA band;
-   the ground band sits at the top of the footer and fades into the brown. */
-.leaf-band{position:relative;z-index:2;width:100%;height:min(30vh,30vw);overflow:hidden;background:var(--cream)}
-.leaf-band img{width:100%;height:100%;object-fit:cover;object-position:center bottom;-webkit-mask-image:linear-gradient(to top,#000 55%,transparent 100%);mask-image:linear-gradient(to top,#000 55%,transparent 100%)}
-.ground-band{width:100%;height:min(34vh,28vw);overflow:hidden;margin-top:calc(-1 * var(--s4));margin-bottom:var(--s3)}
+   the ground band sits at the top of the footer and fades into the brown.
+   Leaf band: tall enough that the three painted pomegranates (rows 55-88% of the art) sit whole;
+   the art is pinned near its foot (object-position 86%) and the cream fade only reaches the leaf tips above the fruit. */
+.leaf-band{position:relative;z-index:2;width:100%;height:min(42vh,34vw);overflow:hidden;background:var(--cream)}
+.leaf-band img{width:100%;height:100%;object-fit:cover;object-position:center 86%;-webkit-mask-image:linear-gradient(to top,#000 86%,transparent 100%);mask-image:linear-gradient(to top,#000 86%,transparent 100%)}
+.ground-band{width:100%;height:min(34vh,28vw);overflow:hidden;margin:0}
 .ground-band img{width:100%;height:100%;object-fit:cover;object-position:center bottom;-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 35%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0%,#000 35%,transparent 100%)}
 
 /* ---------- Hero ---------- */
@@ -284,18 +286,60 @@ main{position:relative;z-index:2}
 .form__note{font-size:14px;line-height:20px;color:var(--muted);font-style:italic}
 
 /* ---------- CTA band + footer ---------- */
-.cta{background:var(--brown);color:var(--cream);text-align:center;padding-block:clamp(72px,14vh,160px)}
+.cta{position:relative;background:var(--brown);color:var(--cream);text-align:center;padding-block:clamp(72px,14vh,160px);min-height:70vh;display:grid;align-content:center}
 .cta__title{font-size:clamp(40px,8vw,112px);line-height:1;letter-spacing:.04em;text-transform:uppercase;margin-bottom:var(--s2)}
-.cta .fa{color:var(--cream);margin-bottom:var(--s3)}
-.site-footer{position:relative;z-index:2;background:var(--brown);color:var(--cream);border-top:2px solid rgba(240,230,213,.25);padding-block:var(--s4) var(--s3)}
-.site-footer__grid{display:grid;gap:var(--s3)}
-@media (min-width:768px){.site-footer__grid{grid-template-columns:1.2fr 1fr 1fr;align-items:start}}
-.site-footer__logo{width:min(100%,320px);height:auto}
-.site-footer address{font-style:normal;display:grid;gap:4px}
-.site-footer a:hover{border-bottom:2px solid var(--amber)}
-.site-footer__fa{font-size:20px;line-height:1.7;text-align:left}
-@media (min-width:768px){.site-footer__fa{text-align:right}}
-.site-footer__legal{margin-top:var(--s3);font-size:14px;line-height:20px;opacity:.75;display:flex;flex-wrap:wrap;gap:var(--s2);justify-content:space-between}
+.cta .fa{color:var(--cream)}
+.cta__line{font-size:clamp(18px,1.6vw,22px);line-height:1.5;margin:0 auto}
+.cta__actions{margin-top:clamp(28px,4vh,44px);display:grid;gap:var(--s2);justify-items:center}
+.btn--big{padding:20px 40px;font-size:clamp(18px,1.5vw,21px)}
+.btn--cream{background:transparent;border-color:var(--cream);color:var(--cream)}
+.btn--cream:hover{background:var(--cream);color:var(--brown)}
+.cta__contact{font-size:15px;line-height:22px;letter-spacing:.02em;color:rgba(240,230,213,.8);display:flex;flex-wrap:wrap;justify-content:center;gap:0 12px}
+.cta__contact a{border-bottom:1px solid transparent;transition:border-color .3s,color .3s}
+.cta__contact a:hover{color:var(--cream);border-bottom-color:var(--amber)}
+/* Variant A "Poster": 1px cream inset frame, wordmark on top, the tagline inside the kashida line */
+.cta--poster{padding-block:clamp(96px,16vh,180px)}
+.cta--poster::before{content:"";position:absolute;inset:16px;border:1px solid var(--cream);pointer-events:none}
+@media (min-width:768px){.cta--poster::before{inset:24px}}
+.cta--poster .container{position:relative;z-index:1}
+.cta__wordmark{width:clamp(132px,13vw,176px);height:auto;display:block;margin:0 auto clamp(32px,6vh,56px)}
+.cta--poster .cta__title{font-size:clamp(34px,7.4vw,104px);letter-spacing:.08em;margin-bottom:clamp(24px,4vh,40px)}
+.kashida-tagline{display:flex;align-items:center;gap:clamp(14px,2vw,24px);width:min(100%,760px);margin:0 auto clamp(20px,3vh,28px)}
+.kashida-tagline::before,.kashida-tagline::after{content:"";flex:1 1 0;height:2px;background:var(--cream)}
+.kashida-tagline .fa{flex:0 0 auto;white-space:nowrap;margin:0;line-height:1.4}
+/* Variant B "Mark": the painted split pomegranate above the title, Persian right-aligned on a short kashida, cream rules top and bottom */
+.cta--mark{border-top:1px solid var(--cream);border-bottom:1px solid var(--cream)}
+.cta__mark{width:120px;height:auto;display:block;margin:0 auto clamp(24px,4vh,40px)}
+.cta__titleblock{display:inline-grid;justify-items:stretch;margin-bottom:clamp(24px,4vh,36px)}
+.cta--mark .cta__title{margin-bottom:var(--s1)}
+.cta__fa-row{display:flex;align-items:center;justify-content:flex-end;gap:16px}
+.cta__fa-row::before{content:"";width:clamp(48px,8vw,96px);height:2px;background:var(--cream)}
+.cta__fa-row .fa{margin:0;line-height:1.4}
+.btn--amber:hover{background:var(--amber)}
+/* Footer: the painted ground band sits ABOVE the grid; the grid is 3 columns on a 24px baseline, 64px top/bottom, 48px column gap */
+.site-footer{position:relative;z-index:2;background:var(--brown);color:var(--cream);border-top:2px solid rgba(240,230,213,.25)}
+.site-footer__inner{padding-block:64px}
+.site-footer__grid{display:grid;gap:32px;line-height:24px}
+.site-footer__brand{display:grid;gap:16px;align-content:start}
+.site-footer__logo{width:min(100%,200px);height:auto;display:block}
+.site-footer__tag{font-size:13px;line-height:24px;letter-spacing:.04em;color:rgba(240,230,213,.8)}
+.site-footer__col{display:grid;gap:10px;align-content:start}
+.site-footer__eyebrow{font-size:12px;line-height:24px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--amber);margin-bottom:2px}
+.site-footer__list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.site-footer__list a{display:inline-block;line-height:24px;border-bottom:1px solid transparent;transition:border-color .3s}
+.site-footer__list a:hover{border-bottom-color:var(--cream)}
+.site-footer__fa{font-size:18px!important;line-height:24px;white-space:nowrap;text-align:right;margin-top:14px}
+.site-footer__bottom{margin-top:48px;padding-top:24px;border-top:1px solid rgba(240,230,213,.25);font-size:13px;line-height:24px;color:rgba(240,230,213,.7);display:flex;flex-wrap:wrap;gap:4px 24px;justify-content:space-between}
+@media (min-width:768px){
+  .site-footer__grid{grid-template-columns:1fr 1fr;column-gap:48px;align-items:start}
+  .site-footer__brand{grid-column:1/-1}
+  .site-footer__logo{width:240px}
+  .site-footer__col--end{text-align:right}
+}
+@media (min-width:1024px){
+  .site-footer__grid{grid-template-columns:1.45fr 1fr 1.17fr}
+  .site-footer__brand{grid-column:auto}
+}
 
 /* ---------- Weddings page ---------- */
 .tradition{border-top:2px solid var(--red)}

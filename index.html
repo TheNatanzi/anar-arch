@@ -129,7 +129,7 @@
           </div>
         </article>
         <article class="accordion__panel">
-          <div class="accordion__media"></div>
+          <div class="accordion__media"><img src="assets/img/pom-split-leaves.jpg" width="1280" height="1920" alt="A split pomegranate among its leaves" loading="lazy" decoding="async"></div>
           <button class="accordion__trigger" type="button" aria-expanded="false"><span class="visually-hidden">Show Nikah</span></button>
           <span class="accordion__label" aria-hidden="true">Nikah</span>
           <div class="accordion__body">
@@ -139,7 +139,7 @@
           </div>
         </article>
         <article class="accordion__panel">
-          <div class="accordion__media"><img src="assets/img/pom-in-hand.jpg" width="1500" height="2000" alt="A pomegranate held in an open hand" loading="lazy" decoding="async"></div>
+          <div class="accordion__media"><img src="assets/img/pom-seeds-tray.jpg" width="1920" height="1355" alt="Pomegranate seeds in a bowl on a tray" loading="lazy" decoding="async"></div>
           <button class="accordion__trigger" type="button" aria-expanded="false"><span class="visually-hidden">Show Mehndi and Sangeet</span></button>
           <span class="accordion__label" aria-hidden="true">Mehndi &amp; Sangeet</span>
           <div class="accordion__body">
@@ -248,11 +248,34 @@
   <!-- Static leaf band: the foot of the page content, above the CTA band -->
   <div class="leaf-band" aria-hidden="true"><img src="assets/tree/painted/bottom-canopy.webp" width="2752" height="1536" alt="" loading="lazy" decoding="async"></div>
 
-  <section class="cta on-brown" aria-labelledby="cta-title">
+  <!-- CTA bar, TWO VARIANTS stacked for the owner to choose (temporary: delete the one not chosen).
+       A "Poster": cream inset frame, wordmark on top, the Persian tagline sits inside the kashida line. -->
+  <section class="cta cta--poster on-brown" id="cta-a" aria-labelledby="cta-title-a">
     <div class="container">
-      <h2 id="cta-title" class="cta__title reveal">Reimagined Heritage</h2>
-      <p class="fa fa--big reveal" lang="fa" dir="rtl" style="text-align:center">میراث، از نو</p>
-      <p class="reveal"><a class="btn btn--amber" href="index.html#inquire">Inquire</a></p>
+      <img class="cta__wordmark reveal" src="assets/logo/logo-cream.svg" width="1600" height="552" alt="Anar Events" loading="lazy">
+      <h2 id="cta-title-a" class="cta__title reveal">Reimagined<br>Heritage</h2>
+      <div class="kashida-tagline reveal"><p class="fa fa--big" lang="fa" dir="rtl">میراث، از نو</p></div>
+      <p class="cta__line reveal">Timeless traditions, curated for the modern era.</p>
+      <div class="cta__actions reveal">
+        <a class="btn btn--cream btn--big" href="index.html#inquire">Begin the conversation</a>
+        <p class="cta__contact"><span>Call <a href="tel:+19252639949">(925) 263-9949</a></span><span aria-hidden="true">·</span><a href="https://wa.me/19252639949" rel="noopener">WhatsApp</a><span aria-hidden="true">·</span><a href="mailto:hello@anarevents.com">hello@anarevents.com</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- B "Mark": the painted split pomegranate as a mark, Persian right-aligned on a short kashida, amber button, cream rules top and bottom. -->
+  <section class="cta cta--mark on-brown" id="cta-b" aria-labelledby="cta-title-b">
+    <div class="container">
+      <img class="cta__mark reveal" src="assets/tree/painted/pom-mark.webp" width="350" height="273" alt="" aria-hidden="true" loading="lazy" decoding="async">
+      <div class="cta__titleblock reveal">
+        <h2 id="cta-title-b" class="cta__title">Reimagined Heritage</h2>
+        <div class="cta__fa-row"><p class="fa fa--big" lang="fa" dir="rtl">میراث، از نو</p></div>
+      </div>
+      <p class="cta__line reveal">Timeless traditions, curated for the modern era.</p>
+      <div class="cta__actions reveal">
+        <a class="btn btn--amber btn--big" href="index.html#inquire">Begin the conversation</a>
+        <p class="cta__contact"><span>Call <a href="tel:+19252639949">(925) 263-9949</a></span><span aria-hidden="true">·</span><a href="https://wa.me/19252639949" rel="noopener">WhatsApp</a><span aria-hidden="true">·</span><a href="mailto:hello@anarevents.com">hello@anarevents.com</a></p>
+      </div>
     </div>
   </section>
 
@@ -260,20 +283,32 @@
 
 <footer class="site-footer on-brown">
   <div class="ground-band" aria-hidden="true"><img src="assets/tree/painted/ground-bottom.webp" width="2752" height="1536" alt="" loading="lazy" decoding="async"></div>
-  <div class="container">
+  <div class="container site-footer__inner">
     <div class="site-footer__grid">
-      <div>
+      <div class="site-footer__brand">
         <img class="site-footer__logo" src="assets/logo/logo-cream-url.svg" width="1600" height="552" alt="Anar Events · anarevents.com" loading="lazy">
+        <p class="site-footer__tag">Persian, Afghan and South Asian weddings<br>San Francisco Bay Area</p>
       </div>
-      <address>
-        <span>Anar Events · San Francisco Bay Area</span>
-        <a href="tel:+19252639949">(925) 263-9949</a>
-        <a href="mailto:hello@anarevents.com">hello@anarevents.com</a>
-        <a href="https://instagram.com/anarevents" rel="noopener">Instagram · @anarevents</a>
-      </address>
-      <p class="site-footer__fa fa" lang="fa" dir="rtl">انار · برنامه‌ریزی عروسی و جشن</p>
+      <div class="site-footer__col">
+        <p class="site-footer__eyebrow">Contact</p>
+        <ul class="site-footer__list">
+          <li><a href="tel:+19252639949">(925) 263-9949</a></li>
+          <li><a href="https://wa.me/19252639949" rel="noopener">WhatsApp</a></li>
+          <li><a href="mailto:hello@anarevents.com">hello@anarevents.com</a></li>
+        </ul>
+      </div>
+      <div class="site-footer__col site-footer__col--end">
+        <p class="site-footer__eyebrow">Follow</p>
+        <ul class="site-footer__list">
+          <li><a href="https://instagram.com/anarevents" rel="noopener">Instagram · @anarevents</a></li>
+        </ul>
+        <p class="site-footer__fa fa" lang="fa" dir="rtl">انار · برنامه‌ریزی عروسی و جشن</p>
+      </div>
     </div>
-    <p class="site-footer__legal"><span>© 2026 Anar LLC. Persian, Afghan and South Asian weddings.</span><span>Timeless traditions, curated for the modern era.</span></p>
+    <div class="site-footer__bottom">
+      <span>© 2026 Anar LLC</span>
+      <span>Timeless traditions, curated for the modern era.</span>
+    </div>
   </div>
 </footer>
 </body>

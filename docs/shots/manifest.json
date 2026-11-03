@@ -1,0 +1,155 @@
+{
+ "shots": [
+  {
+   "page": "index.html",
+   "view": "desktop",
+   "scroll": 0,
+   "file": "index-desktop-0.jpg"
+  },
+  {
+   "page": "index.html",
+   "view": "desktop",
+   "scroll": 0.22,
+   "file": "index-desktop-1.jpg"
+  },
+  {
+   "page": "index.html",
+   "view": "desktop",
+   "scroll": 0.45,
+   "file": "index-desktop-2.jpg"
+  },
+  {
+   "page": "index.html",
+   "view": "desktop",
+   "scroll": 0.68,
+   "file": "index-desktop-3.jpg"
+  },
+  {
+   "page": "index.html",
+   "view": "desktop",
+   "scroll": 0.92,
+   "file": "index-desktop-4.jpg"
+  },
+  {
+   "page": "weddings.html",
+   "view": "desktop",
+   "scroll": 0,
+   "file": "weddings-desktop-0.jpg"
+  },
+  {
+   "page": "weddings.html",
+   "view": "desktop",
+   "scroll": 0.22,
+   "file": "weddings-desktop-1.jpg"
+  },
+  {
+   "page": "weddings.html",
+   "view": "desktop",
+   "scroll": 0.45,
+   "file": "weddings-desktop-2.jpg"
+  },
+  {
+   "page": "weddings.html",
+   "view": "desktop",
+   "scroll": 0.68,
+   "file": "weddings-desktop-3.jpg"
+  },
+  {
+   "page": "weddings.html",
+   "view": "desktop",
+   "scroll": 0.92,
+   "file": "weddings-desktop-4.jpg"
+  },
+  {
+   "page": "index.html",
+   "view": "phone",
+   "scroll": 0,
+   "file": "index-phone-0.jpg"
+  },
+  {
+   "page": "index.html",
+   "view": "phone",
+   "scroll": 0.22,
+   "file": "index-phone-1.jpg"
+  },
+  {
+   "page": "index.html",
+   "view": "phone",
+   "scroll": 0.45,
+   "file": "index-phone-2.jpg"
+  },
+  {
+   "page": "index.html",
+   "view": "phone",
+   "scroll": 0.68,
+   "file": "index-phone-3.jpg"
+  },
+  {
+   "page": "index.html",
+   "view": "phone",
+   "scroll": 0.92,
+   "file": "index-phone-4.jpg"
+  },
+  {
+   "page": "weddings.html",
+   "view": "phone",
+   "scroll": 0,
+   "file": "weddings-phone-0.jpg"
+  },
+  {
+   "page": "weddings.html",
+   "view": "phone",
+   "scroll": 0.22,
+   "file": "weddings-phone-1.jpg"
+  },
+  {
+   "page": "weddings.html",
+   "view": "phone",
+   "scroll": 0.45,
+   "file": "weddings-phone-2.jpg"
+  },
+  {
+   "page": "weddings.html",
+   "view": "phone",
+   "scroll": 0.68,
+   "file": "weddings-phone-3.jpg"
+  },
+  {
+   "page": "weddings.html",
+   "view": "phone",
+   "scroll": 0.92,
+   "file": "weddings-phone-4.jpg"
+  },
+  {
+   "page": "index.html",
+   "view": "w1440",
+   "element": "#cta-a",
+   "file": "cta-A.jpg"
+  },
+  {
+   "page": "index.html",
+   "view": "w1440",
+   "element": "#cta-b",
+   "file": "cta-B.jpg"
+  },
+  {
+   "page": "index.html",
+   "view": "w1440",
+   "element": ".leaf-band",
+   "file": "leaf-band.jpg"
+  },
+  {
+   "page": "index.html",
+   "view": "w1440",
+   "element": ".site-footer",
+   "file": "footer-desktop.jpg"
+  },
+  {
+   "page": "index.html",
+   "view": "w390",
+   "element": ".site-footer",
+   "file": "footer-phone.jpg"
+  }
+ ],
+ "errors": []
+}
