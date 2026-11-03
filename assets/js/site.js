@@ -1,9 +1,11 @@
 /* =========================================================
-   Anar Events — site.js (v1, 3 Nov 2026)
-   Requires (loaded before this file, all pinned):
-     GSAP 3.12.5 + ScrollTrigger (cdnjs), Lenis 1.1.18 (unpkg)
-   Every motion is a numbered block below. If GSAP is missing or
-   prefers-reduced-motion is on, nothing is hidden and nothing scrubs.
+   Anar Events — site.js (v2, 3 Nov 2026)
+   Requires (loaded before this file, self-hosted under assets/js/vendor, all pinned):
+     GSAP 3.12.5 + ScrollTrigger 3.12.5, Lenis 1.1.18
+   Every motion is a numbered block inside buildMotion(). If GSAP is missing,
+   prefers-reduced-motion is on, or the visitor presses the header's Pause
+   control, nothing is hidden and nothing scrubs: killMotion() reverts every
+   tween to the plain CSS state.
    ========================================================= */
 (function () {
   'use strict';
@@ -16,7 +18,7 @@
   var ART = 'assets/tree/painted/';
   /* each layer: the file stem and the rendered width (sizes) so the browser picks the 1400px or the 2752px file */
   var TREE_LAYERS = {
-    leftBranch:   { file: 'left-branch',  sizes: '(min-width:1400px) 520px, 26vw' },
+    leftBranch:   { file: 'left-branch',  sizes: '(min-width:1400px) 520px, (min-width:768px) 26vw, 150px' },
     rightBranch:  { file: 'right-branch', sizes: '(min-width:1400px) 520px, 26vw' },
     cloud1:       { file: 'cloud-1',      sizes: '120vw' },
     cloud2:       { file: 'cloud-2',      sizes: '140vw' }
@@ -27,21 +29,32 @@
   /* Parallax speed per layer (fraction of the page's scroll distance).
      Positive = moves up as you scroll down. */
   var SPEED = { leftBranch: 0.06, rightBranch: 0.08 };
-  var BRANCH_MAX = function () { return Math.round(window.innerHeight * 0.4); };   /* px: branches drift up at most ~40vh */
 
   var html = document.documentElement;
   var body = document.body;
-  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var saveData = !!(navigator.connection && navigator.connection.saveData === true);
-  var hasGsap = typeof window.gsap !== 'undefined' && typeof window.ScrollTrigger !== 'undefined';
-  var motion = hasGsap && !reduced;
-  var isDesktop = function () { return window.matchMedia('(min-width: 768px)').matches; };
-  var wideScreen = function () { return window.matchMedia('(min-width: 901px)').matches; };
   var $ = function (s, c) { return (c || document).querySelector(s); };
   var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+  var onMQ = function (mq, fn) { if (mq.addEventListener) { mq.addEventListener('change', fn); } else if (mq.addListener) { mq.addListener(fn); } };
+  var rmq = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var desktopQuery = window.matchMedia('(min-width: 768px)');
+  var reduced = rmq.matches;
+  var saveData = !!(navigator.connection && navigator.connection.saveData === true);
+  var hasGsap = typeof window.gsap !== 'undefined' && typeof window.ScrollTrigger !== 'undefined';
+  var isDesktop = function () { return desktopQuery.matches; };
+  var wideScreen = function () { return window.matchMedia('(min-width: 901px)').matches; };
 
-  html.classList.add(motion ? 'motion' : 'reduced');
-  if (motion) { gsap.registerPlugin(ScrollTrigger); }
+  var header = $('.site-header');
+  var headerHeight = function () { return header ? header.offsetHeight : 0; };
+  /* px: the branches (top: 25vh) drift up at most to 16px below the header bar, so a branch tip never passes under it */
+  var BRANCH_MAX = function () { return Math.max(0, Math.round(0.25 * window.innerHeight - headerHeight() - 16)); };
+
+  /* userPaused: the visitor pressed Pause (or the OS asked for reduced motion / less data at load).
+     motionOn: the GSAP motion is built right now. */
+  var userPaused = reduced || saveData;
+  var motionOn = false;
+  var canMotion = function () { return hasGsap && !reduced && !userPaused; };
+  html.classList.add(canMotion() ? 'motion' : 'reduced');
+  if (hasGsap) { gsap.registerPlugin(ScrollTrigger); }
 
   /* 0. Tree layer sources from the map (every page): src + srcset (1400w, 2752w) + sizes */
   $$('[data-layer]').forEach(function (el) {
@@ -59,14 +72,15 @@
          'load', never under prefers-reduced-motion or Save-Data
          unless the visitor presses Play. Plays only while the
          tab is visible and the hero is on screen; pauses off
-         screen and on document.hidden. The "Pause video / Play
-         video" control sits in the header bar; aria-pressed
-         "true" means paused. The poster shows in every other case.
+         screen and on document.hidden. The "Pause motion / Play
+         motion" control sits in the header bar and pauses the
+         video AND every GSAP motion (pauseAll / playAll below);
+         aria-pressed "true" means paused. The poster shows in
+         every other case.
      --------------------------------------------------------- */
   var heroVideo = $('.hero__video');
   var heroToggle = $('.hero-toggle');
   var videoLoaded = false, videoFailed = false;
-  var userPaused = reduced || saveData;   /* starts on the poster when the visitor asked for less motion or data */
   var heroVisible = function () {
     if (!heroVideo || document.hidden) { return false; }
     var r = heroVideo.getBoundingClientRect();
@@ -80,7 +94,7 @@
   var setToggle = function () {
     if (!heroToggle) { return; }
     heroToggle.setAttribute('aria-pressed', userPaused ? 'true' : 'false');
-    heroToggle.setAttribute('aria-label', userPaused ? 'Play video' : 'Pause video');
+    heroToggle.setAttribute('aria-label', userPaused ? 'Play motion' : 'Pause motion');
   };
   function loadHeroVideo() {
     if (!heroVideo || videoLoaded || videoFailed || userPaused) { return; }
@@ -90,11 +104,10 @@
     var source = document.createElement('source');
     source.type = 'video/mp4';
     source.src = src;
-    var fallback = function () {   /* a missing file or a decode error: back to the poster, silently */
+    var fallback = function () {   /* a missing file or a decode error: back to the poster, silently (the control keeps pausing the rest) */
       if (videoFailed) { return; }
       videoFailed = true;
       try { heroVideo.pause(); if (source.parentNode) { heroVideo.removeChild(source); } heroVideo.load(); } catch (e) { /* poster is showing */ }
-      if (heroToggle) { heroToggle.hidden = true; }
     };
     source.addEventListener('error', fallback);
     heroVideo.addEventListener('error', fallback);
@@ -119,32 +132,24 @@
       if (!videoLoaded) { return; }
       if (document.hidden) { heroVideo.pause(); } else { playVideo(); }
     });
-    if (heroToggle) {
-      setToggle();
-      heroToggle.addEventListener('click', function () {
-        userPaused = !userPaused;
-        setToggle();
-        if (userPaused) { heroVideo.pause(); }
-        else if (!videoLoaded) { loadHeroVideo(); }
-        else { playVideo(); }
-      });
-    }
-  } else if (heroToggle) {
-    heroToggle.hidden = true;
   }
+  /* the control is useful wherever something moves: a video or GSAP; otherwise it is hidden */
+  if (heroToggle && !heroVideo && !hasGsap) { heroToggle.hidden = true; }
 
   /* ---------------------------------------------------------
-     Smooth scroll (Lenis) wired to the GSAP ticker
+     Smooth scroll (Lenis) wired to the GSAP ticker. Smooth
+     scrolling is scrolling, not decoration, so it stays on
+     while motion is paused; it never runs under reduced motion.
      --------------------------------------------------------- */
   var lenis = null;
-  if (motion && typeof window.Lenis !== 'undefined') {
+  if (hasGsap && !reduced && typeof window.Lenis !== 'undefined') {
     lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
     lenis.on('scroll', ScrollTrigger.update);
     gsap.ticker.add(function (t) { lenis.raf(t * 1000); });
     gsap.ticker.lagSmoothing(0);
     html.classList.add('lenis');
   }
-  function headerOffset() { return -($('.site-header') ? $('.site-header').offsetHeight + 8 : 0); }
+  function headerOffset() { return -(headerHeight() + 8); }
   /* focus moves to the destination (keyboard and screen-reader users continue from there) */
   function focusEl(el) {
     if (!el.hasAttribute('tabindex')) { el.setAttribute('tabindex', '-1'); }
@@ -176,12 +181,18 @@
   }
 
   /* ---------------------------------------------------------
-     Header: solid once scrolled; mobile drawer
+     Header: solid once scrolled; mobile drawer.
      (on index with motion on, block 2 drives the solid state
       from the wordmark morph instead of the 40px threshold)
+     The links are visible by default (CSS); only once the
+     toggle is wired (html.nav-ready) do they collapse into the
+     drawer. Escape closes and returns focus to the toggle; a
+     click outside the header, focus leaving the header, or the
+     viewport growing past 768px closes it; the collapsed drawer
+     is aria-hidden; Lenis stops while it is open.
      --------------------------------------------------------- */
-  var header = $('.site-header');
   var navToggle = $('.nav-toggle');
+  var nav = $('.site-nav');
   var morphDrivesHeader = false;
   function onScrollState() {
     if (!header || morphDrivesHeader) { return; }
@@ -189,17 +200,39 @@
   }
   if (lenis) { lenis.on('scroll', onScrollState); } else { window.addEventListener('scroll', onScrollState, { passive: true }); }
   onScrollState();
-  function closeNav() {
-    if (!header || !navToggle) { return; }
-    header.classList.remove('nav-open');
-    navToggle.setAttribute('aria-expanded', 'false');
+  function syncNav() {
+    if (!header || !navToggle || !nav) { return; }
+    var phone = !isDesktop();
+    var open = header.classList.contains('nav-open');
+    if (open && !phone) { header.classList.remove('nav-open'); open = false; }
+    navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (phone && !open) { nav.setAttribute('aria-hidden', 'true'); } else { nav.removeAttribute('aria-hidden'); }
+    if (lenis) { if (open) { lenis.stop(); } else { lenis.start(); } }
   }
-  if (navToggle) {
+  function closeNav() {
+    if (!header) { return; }
+    header.classList.remove('nav-open');
+    syncNav();
+  }
+  if (navToggle && nav && header) {
     navToggle.addEventListener('click', function () {
-      var open = header.classList.toggle('nav-open');
-      navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      header.classList.toggle('nav-open');
+      syncNav();
     });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeNav(); } });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && header.classList.contains('nav-open')) { closeNav(); navToggle.focus(); }
+    });
+    $$('a', nav).forEach(function (a) { a.addEventListener('click', closeNav); });
+    document.addEventListener('click', function (e) {
+      if (header.classList.contains('nav-open') && !header.contains(e.target)) { closeNav(); }
+    }, true);
+    header.addEventListener('focusout', function (e) {
+      if (header.classList.contains('nav-open') && e.relatedTarget && !header.contains(e.relatedTarget)) { closeNav(); }
+    });
+    onMQ(desktopQuery, function (e) { if (e.matches) { closeNav(); } else { syncNav(); } });
+    window.addEventListener('resize', syncNav, { passive: true });
+    syncNav();
+    html.classList.add('nav-ready');   /* only now do the links collapse into the drawer (CSS) */
   }
 
   /* ---------------------------------------------------------
@@ -324,168 +357,257 @@
     });
   }
 
-  if (!motion) { return; }   /* ===== everything below is motion only ===== */
-
-  /* ---------------------------------------------------------
-     1. Hero: the tagline fades (the wordmark is handled by the
-        morph in block 2);
-     2b. two cloud layers roll in from the bottom at different speeds;
-        then the hero fades to cream.
-     --------------------------------------------------------- */
+  /* =========================================================
+     MOTION. Everything below builds inside one gsap.context so
+     killMotion() can revert every tween, ScrollTrigger and
+     inline style in one call (the Pause control, a reduced-
+     motion change) and buildMotion() can rebuild it (Play).
+     ========================================================= */
+  var ctx = null;
   var hero = $('.hero');
-  if (hero) {
-    var heroTl = gsap.timeline({
-      scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true }
-    });
-    heroTl
-      .to('.hero__tag', { opacity: 0, ease: 'none', duration: 0.5 }, 0)
-      .fromTo('.hero__cloud--1', { yPercent: 35, opacity: 0 }, { yPercent: -55, opacity: 1, ease: 'none', duration: 1 }, 0)
-      .fromTo('.hero__cloud--2', { yPercent: 55, opacity: 0 }, { yPercent: -30, opacity: 1, ease: 'none', duration: 1 }, 0)
-      .to('.hero__fade', { opacity: 1, ease: 'none', duration: 0.45 }, 0.55);
-  }
-
-  /* ---------------------------------------------------------
-     2. Wordmark morph: the hero wordmark travels up and shrinks
-        into the header's logo slot over the first 70% of the hero
-        (one scrubbed transform: translate + scale, measured with
-        getBoundingClientRect at build and on every refresh).
-        At the end it is swapped for the header logo (same artwork,
-        same box); scrolling back up reverses it.
-     --------------------------------------------------------- */
   var morph = $('.logo-morph');
   var heroWordImg = $('.hero__word img');
   var headerLogoBox = $('.site-logo');   /* the anchor: always laid out (visibility hidden until docked) */
-  if (hero && morph && heroWordImg && headerLogoBox && header) {
-    var MORPH_END = 0.7;   /* fraction of the hero height */
-    var from = { x: 0, y: 0, w: 1 }, to = { x: 0, y: 0, w: 1 };
-    function measure() {
-      /* hero wordmark in document coordinates (the hero sits at the top of the page) */
-      var sy = window.scrollY || window.pageYOffset;
-      var h = heroWordImg.getBoundingClientRect();
-      from = { x: h.left, y: h.top + sy, w: h.width };
-      /* header logo box in viewport coordinates (the header is fixed) */
-      var l = headerLogoBox.getBoundingClientRect();
-      to = { x: l.left, y: l.top, w: l.width };
-      morph.style.width = from.w + 'px';
-      morph.style.height = (from.w * 552 / 1600) + 'px';
-    }
-    var docked = null;   /* null: not yet applied, so the first call always sets the classes */
-    function setDocked(on) {
-      if (on === docked) { return; }
-      docked = on;
-      header.classList.toggle('logo-docked', on);
-      header.classList.toggle('is-scrolled', on);
-      morph.classList.toggle('is-on', !on);
-    }
-    morphDrivesHeader = true;
-    measure();
-    morph.classList.add('is-built');   /* hides the in-flow hero wordmark for good; the morph layer draws it */
-    morph.classList.add('is-on');
-    var cream = getComputedStyle(html).getPropertyValue('--cream').trim() || '#F0E6D5';
-    var brown = getComputedStyle(html).getPropertyValue('--brown').trim() || '#432617';
-    var morphTl = gsap.timeline({
-      scrollTrigger: {
-        trigger: hero, start: 'top top',
-        end: function () { return '+=' + Math.round(hero.offsetHeight * MORPH_END); },
-        scrub: true, invalidateOnRefresh: true,
-        onRefreshInit: measure,
-        onUpdate: function (st) { setDocked(st.progress >= 1); },
-        onRefresh: function (st) { setDocked(st.progress >= 1); }
-      }
-    });
-    morphTl
-      .fromTo(morph,
-        { x: function () { return from.x; }, y: function () { return from.y; }, scale: 1 },
-        { x: function () { return to.x; }, y: function () { return to.y; }, scale: function () { return to.w / from.w; }, ease: 'none', duration: 1 }, 0)
-      /* last stretch: the wordmark turns red as the header bar turns cream beneath it */
-      .to('.logo-morph__cream', { opacity: 0, ease: 'none', duration: 0.2 }, 0.8)
-      .to('.logo-morph__red', { opacity: 1, ease: 'none', duration: 0.2 }, 0.8)
-      .fromTo(header, { backgroundColor: 'rgba(240,230,213,0)', color: cream }, { backgroundColor: cream, color: brown, ease: 'none', duration: 0.2 }, 0.8);
-  }
-
-  /* ---------------------------------------------------------
-     3. Side-branch parallax (every page): the two fixed branches
-        drift up slowly as the page scrolls.
-     --------------------------------------------------------- */
   var frame = $('.tree-frame');
-  if (frame) {
-    var scrollDist = function () { return Math.max(1, html.scrollHeight - window.innerHeight); };
-    $$('img[data-layer]', frame).forEach(function (el, i) {
-      var s = SPEED[el.getAttribute('data-layer')];
-      if (typeof s === 'undefined') { return; }
-      gsap.to(el, {
-        y: function () { return Math.max(-scrollDist() * s, -BRANCH_MAX()); },
-        ease: 'none',
-        scrollTrigger: { trigger: body, start: 'top top', end: 'bottom bottom', scrub: true, invalidateOnRefresh: true }
+  /* drawn paths (kashida scribbles, the journey and steps lines): the length is measured when the SVG is laid out
+     (hidden SVGs give 0 and are skipped) and measured again on every ScrollTrigger refresh (a resize can swap the
+     journey's horizontal and vertical lines) */
+  var dashPaths = [];
+  function pathLength(p) {
+    try {
+      if (!p.getClientRects().length) { return 0; }   /* display:none (the other journey line) */
+      var len = p.getTotalLength();
+      return (isFinite(len) && len > 0) ? len : 0;
+    } catch (e) { return 0; }
+  }
+  function dashSet(d) {
+    d.len = pathLength(d.p);
+    d.p.style.strokeDasharray = d.len ? d.len : 'none';
+    d.p.style.strokeDashoffset = d.len;
+  }
+  function remeasureDash() { dashPaths.forEach(dashSet); }
+  function dashTrack(p) {
+    var d = { p: p, len: 0 };
+    dashSet(d);
+    dashPaths.push(d);
+    return d;
+  }
+
+  function buildMotion() {
+    if (motionOn || !hasGsap) { return; }
+    motionOn = true;
+    html.classList.add('motion');
+    html.classList.remove('reduced');
+    dashPaths = [];
+    ctx = gsap.context(function () {
+
+      /* ---------------------------------------------------------
+         1. Hero: the tagline fades (the wordmark is handled by the
+            morph in block 2);
+         2b. two cloud layers roll in from the bottom at different speeds
+            (hidden by CSS until this timeline sets them); then the hero fades to cream.
+         --------------------------------------------------------- */
+      if (hero) {
+        var heroTl = gsap.timeline({
+          scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true }
+        });
+        heroTl
+          .to('.hero__tag', { opacity: 0, ease: 'none', duration: 0.5 }, 0)
+          .fromTo('.hero__cloud--1', { yPercent: 35, opacity: 0 }, { yPercent: -55, opacity: 1, ease: 'none', duration: 1 }, 0)
+          .fromTo('.hero__cloud--2', { yPercent: 55, opacity: 0 }, { yPercent: -30, opacity: 1, ease: 'none', duration: 1 }, 0)
+          .to('.hero__fade', { opacity: 1, ease: 'none', duration: 0.45 }, 0.55);
+      }
+
+      /* ---------------------------------------------------------
+         2. Wordmark morph: the hero wordmark travels up and shrinks
+            into the header's logo slot over the first 70% of the hero
+            (one scrubbed transform: translate + scale, measured with
+            getBoundingClientRect at build and on every refresh).
+            At the end it is swapped for the header logo (same artwork,
+            same box); scrolling back up reverses it.
+         --------------------------------------------------------- */
+      if (hero && morph && heroWordImg && headerLogoBox && header) {
+        var MORPH_END = 0.7;   /* fraction of the hero height */
+        var from = { x: 0, y: 0, w: 1 }, to = { x: 0, y: 0, w: 1 };
+        var measure = function () {
+          /* hero wordmark in document coordinates (the hero sits at the top of the page) */
+          var sy = window.scrollY || window.pageYOffset;
+          var h = heroWordImg.getBoundingClientRect();
+          from = { x: h.left, y: h.top + sy, w: h.width };
+          /* header logo box in viewport coordinates (the header is fixed) */
+          var l = headerLogoBox.getBoundingClientRect();
+          to = { x: l.left, y: l.top, w: l.width };
+          morph.style.width = from.w + 'px';
+          morph.style.height = (from.w * 552 / 1600) + 'px';
+        };
+        var docked = null;   /* null: not yet applied, so the first call always sets the classes */
+        var setDocked = function (on) {
+          if (on === docked) { return; }
+          docked = on;
+          header.classList.toggle('logo-docked', on);
+          header.classList.toggle('is-scrolled', on);
+          morph.classList.toggle('is-on', !on);
+        };
+        morphDrivesHeader = true;
+        measure();
+        morph.classList.add('is-built');   /* hides the in-flow hero wordmark while motion is on; the morph layer draws it */
+        morph.classList.add('is-on');
+        var cream = getComputedStyle(html).getPropertyValue('--cream').trim() || '#F0E6D5';
+        var brown = getComputedStyle(html).getPropertyValue('--brown').trim() || '#432617';
+        var morphTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: hero, start: 'top top',
+            end: function () { return '+=' + Math.round(hero.offsetHeight * MORPH_END); },
+            scrub: true, invalidateOnRefresh: true,
+            onRefreshInit: measure,
+            onUpdate: function (st) { setDocked(st.progress >= 1); },
+            onRefresh: function (st) { setDocked(st.progress >= 1); }
+          }
+        });
+        morphTl
+          .fromTo(morph,
+            { x: function () { return from.x; }, y: function () { return from.y; }, scale: 1 },
+            { x: function () { return to.x; }, y: function () { return to.y; }, scale: function () { return to.w / from.w; }, ease: 'none', duration: 1 }, 0)
+          /* last stretch: the wordmark turns red as the header bar turns cream beneath it */
+          .to('.logo-morph__cream', { opacity: 0, ease: 'none', duration: 0.2 }, 0.8)
+          .to('.logo-morph__red', { opacity: 1, ease: 'none', duration: 0.2 }, 0.8)
+          .fromTo(header, { backgroundColor: 'rgba(240,230,213,0)', color: cream }, { backgroundColor: cream, color: brown, ease: 'none', duration: 0.2 }, 0.8);
+      }
+
+      /* ---------------------------------------------------------
+         3. Side-branch parallax (every page): the fixed branches
+            drift up slowly as the page scrolls, never further than
+            BRANCH_MAX (16px below the header bar); a slow 8s sway,
+            +-1.2 degrees about the branch's root (CSS transform-
+            origin). Both live only here, so neither runs under
+            reduced motion or while paused.
+         --------------------------------------------------------- */
+      if (frame) {
+        var scrollDist = function () { return Math.max(1, html.scrollHeight - window.innerHeight); };
+        $$('img[data-layer]', frame).forEach(function (el, i) {
+          var s = SPEED[el.getAttribute('data-layer')];
+          if (typeof s === 'undefined') { return; }
+          gsap.to(el, {
+            y: function () { return Math.max(-scrollDist() * s, -BRANCH_MAX()); },
+            ease: 'none',
+            scrollTrigger: { trigger: body, start: 'top top', end: 'bottom bottom', scrub: true, invalidateOnRefresh: true }
+          });
+          gsap.fromTo(el, { rotation: i % 2 ? 1.2 : -1.2 }, { rotation: i % 2 ? -1.2 : 1.2, duration: 8, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+        });
+      }
+
+      /* ---------------------------------------------------------
+         4. Kashida draw-on: any .kashida-draw path draws with scroll
+            (stroke-dashoffset scrubbed from full length to 0)
+         --------------------------------------------------------- */
+      $$('.kashida-draw path').forEach(function (p) {
+        var d = dashTrack(p);
+        gsap.fromTo(p, { strokeDashoffset: function () { return d.len; } }, {
+          strokeDashoffset: 0, ease: 'none',
+          scrollTrigger: { trigger: p.closest('svg'), start: 'top 88%', end: 'top 45%', scrub: true, invalidateOnRefresh: true }
+        });
       });
-      /* a slow 8s sway, +-1.2 degrees about the branch's root (CSS transform-origin); motion-only, so it never runs under reduced motion */
-      gsap.fromTo(el, { rotation: i % 2 ? 1.2 : -1.2 }, { rotation: i % 2 ? -1.2 : 1.2, duration: 8, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+
+      /* ---------------------------------------------------------
+         7. Journey line with dots (and the steps line on How we work):
+            [data-track] holds .track-line path(s) and .track-dot(s).
+            The line draws across the section; each dot pops as the
+            line reaches it.
+         --------------------------------------------------------- */
+      $$('[data-track]').forEach(function (track) {
+        var paths = $$('.track-line path', track);
+        var dots = $$('.track-dot', track);
+        if (!paths.length) { return; }
+        var tl = gsap.timeline({
+          scrollTrigger: { trigger: track, start: 'top 75%', end: 'bottom 70%', scrub: true, invalidateOnRefresh: true }
+        });
+        paths.forEach(function (p) {
+          var d = dashTrack(p);
+          tl.fromTo(p, { strokeDashoffset: function () { return d.len; } }, { strokeDashoffset: 0, ease: 'none', duration: 1 }, 0);
+        });
+        dots.forEach(function (d, i) {
+          tl.fromTo(d, { scale: 0 }, { scale: 1, ease: 'back.out(2)', duration: 0.06 }, (i + 0.5) / dots.length - 0.03);
+        });
+      });
+
+      /* ---------------------------------------------------------
+         9. Section reveals (fade + rise, 0.9s ease-out), once;
+         10. images scale 1.02 -> 1 on reveal; .stagger children stagger.
+         --------------------------------------------------------- */
+      $$('.reveal').forEach(function (el) {
+        gsap.to(el, {
+          opacity: 1, y: 0, duration: 0.9, ease: 'power2.out',
+          scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+          onComplete: function () { el.classList.add('is-in'); }
+        });
+      });
+      $$('.reveal-img').forEach(function (el) {
+        gsap.to(el, {
+          scale: 1, duration: 1.2, ease: 'power2.out',
+          scrollTrigger: { trigger: el, start: 'top 88%', once: true }
+        });
+      });
+      $$('.stagger').forEach(function (group) {
+        gsap.to(group.children, {
+          opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', stagger: 0.08,
+          scrollTrigger: { trigger: group, start: 'top 88%', once: true }
+        });
+      });
     });
+    ScrollTrigger.addEventListener('refreshInit', remeasureDash);
+    ScrollTrigger.refresh();
+  }
+
+  function killMotion() {
+    if (!motionOn) { return; }
+    motionOn = false;
+    ScrollTrigger.removeEventListener('refreshInit', remeasureDash);
+    if (ctx) { ctx.revert(); ctx = null; }   /* every tween, trigger and inline style it set */
+    dashPaths.forEach(function (d) { d.p.style.strokeDasharray = ''; d.p.style.strokeDashoffset = ''; });
+    dashPaths = [];
+    if (frame) { $$('img[data-layer]', frame).forEach(function (el) { el.style.transform = ''; }); }   /* the sway and parallax leave an identity transform behind */
+    if (morph) { morph.classList.remove('is-on'); morph.classList.remove('is-built'); morph.removeAttribute('style'); }
+    if (header) { header.classList.remove('logo-docked'); }
+    morphDrivesHeader = false;
+    html.classList.remove('motion');
+    html.classList.add('reduced');
+    onScrollState();
   }
 
   /* ---------------------------------------------------------
-     4. Kashida draw-on: any .kashida-draw path draws with scroll
-        (stroke-dashoffset scrubbed from full length to 0)
+     Pause motion / Play motion (the control in the header bar)
+     and the prefers-reduced-motion change event. Pause stops the
+     video, the branch sway and parallax, the clouds, the morph
+     and the reveals; Play rebuilds them (the video only, under
+     reduced motion).
      --------------------------------------------------------- */
-  $$('.kashida-draw path').forEach(function (p) {
-    var len = p.getTotalLength();
-    p.style.strokeDasharray = len;
-    p.style.strokeDashoffset = len;
-    gsap.to(p, {
-      strokeDashoffset: 0, ease: 'none',
-      scrollTrigger: { trigger: p.closest('svg'), start: 'top 88%', end: 'top 45%', scrub: true }
-    });
+  function pauseAll() {
+    userPaused = true;
+    setToggle();
+    if (heroVideo) { heroVideo.pause(); }
+    killMotion();
+  }
+  function playAll() {
+    userPaused = false;
+    setToggle();
+    if (canMotion()) { buildMotion(); }
+    if (heroVideo) { if (!videoLoaded) { loadHeroVideo(); } else { playVideo(); } }
+  }
+  if (heroToggle) {
+    setToggle();
+    heroToggle.addEventListener('click', function () { if (userPaused) { playAll(); } else { pauseAll(); } });
+  }
+  onMQ(rmq, function (e) {
+    reduced = e.matches;
+    if (reduced) { pauseAll(); }
   });
 
-  /* ---------------------------------------------------------
-     7. Journey line with dots (and the steps line on How we work):
-        [data-track] holds .track-line path(s) and .track-dot(s).
-        The line draws across the section; each dot pops as the
-        line reaches it.
-     --------------------------------------------------------- */
-  $$('[data-track]').forEach(function (track) {
-    var paths = $$('.track-line path', track);
-    var dots = $$('.track-dot', track);
-    if (!paths.length) { return; }
-    var tl = gsap.timeline({
-      scrollTrigger: { trigger: track, start: 'top 75%', end: 'bottom 70%', scrub: true }
-    });
-    paths.forEach(function (p) {
-      var len = p.getTotalLength();
-      p.style.strokeDasharray = len;
-      p.style.strokeDashoffset = len;
-      tl.to(p, { strokeDashoffset: 0, ease: 'none', duration: 1 }, 0);
-    });
-    dots.forEach(function (d, i) {
-      tl.fromTo(d, { scale: 0 }, { scale: 1, ease: 'back.out(2)', duration: 0.06 }, (i + 0.5) / dots.length - 0.03);
-    });
-  });
-
-  /* ---------------------------------------------------------
-     9. Section reveals (fade + rise, 0.9s ease-out), once;
-     10. images scale 1.02 -> 1 on reveal; .stagger children stagger.
-     --------------------------------------------------------- */
-  $$('.reveal').forEach(function (el) {
-    gsap.to(el, {
-      opacity: 1, y: 0, duration: 0.9, ease: 'power2.out',
-      scrollTrigger: { trigger: el, start: 'top 88%', once: true },
-      onComplete: function () { el.classList.add('is-in'); }
-    });
-  });
-  $$('.reveal-img').forEach(function (el) {
-    gsap.to(el, {
-      scale: 1, duration: 1.2, ease: 'power2.out',
-      scrollTrigger: { trigger: el, start: 'top 88%', once: true }
-    });
-  });
-  $$('.stagger').forEach(function (group) {
-    gsap.to(group.children, {
-      opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', stagger: 0.08,
-      scrollTrigger: { trigger: group, start: 'top 88%', once: true }
-    });
-  });
+  /* ---- start ---- */
+  if (canMotion()) { buildMotion(); }
 
   /* Refresh triggers once fonts and images have settled */
-  window.addEventListener('load', function () { ScrollTrigger.refresh(); });
-  if (document.fonts && document.fonts.ready) { document.fonts.ready.then(function () { ScrollTrigger.refresh(); }); }
+  if (hasGsap) {
+    window.addEventListener('load', function () { ScrollTrigger.refresh(); });
+    if (document.fonts && document.fonts.ready) { document.fonts.ready.then(function () { ScrollTrigger.refresh(); }); }
+  }
 })();

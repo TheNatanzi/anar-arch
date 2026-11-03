@@ -6,7 +6,7 @@ SITE = Path(r'C:\dev\anar-arch'); OUT = SITE / 'docs' / 'shots'; OUT.mkdir(paren
 PORT = 5181
 H = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(SITE))
 srv = http.server.ThreadingHTTPServer(('127.0.0.1', PORT), H); threading.Thread(target=srv.serve_forever, daemon=True).start()
-pages = ['index.html', 'weddings.html']
+pages = ['index.html', 'weddings.html', 'how-we-work.html', 'about.html']
 views = {'desktop': (1440, 900), 'phone': (390, 844)}
 manifest, errors = [], []
 with sync_playwright() as p:
