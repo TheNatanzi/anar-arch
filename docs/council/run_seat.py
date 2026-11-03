@@ -5,7 +5,7 @@ import os, sys, json, subprocess, re, time
 SITE = r'C:\dev\anar-arch'; D = os.path.join(SITE, 'docs', 'council'); model, role = sys.argv[1], sys.argv[2]; rnd = sys.argv[3] if len(sys.argv) > 3 else '1'
 os.makedirs(os.path.join(D, 'results'), exist_ok=True)
 rubric = open(os.path.join(D, 'RUBRIC.md'), encoding='utf8').read()
-files = ['index.html', 'weddings.html', 'assets/css/site.css', 'assets/js/site.js']
+files = ['index.html', 'weddings.html', 'how-we-work.html', 'about.html', 'assets/css/site.css', 'assets/js/site.js']
 code = ''.join(f'\n\n===== {f} =====\n' + open(os.path.join(SITE, f), encoding='utf8').read() for f in files if os.path.exists(os.path.join(SITE, f)))
 SH = os.path.join(SITE, 'docs', 'shots')
 manifest = json.load(open(os.path.join(SH, 'manifest.json'), encoding='utf8'))

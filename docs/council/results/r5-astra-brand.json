@@ -1,0 +1,36 @@
+{
+ "model": "astra",
+ "role": "brand",
+ "score": 7,
+ "blocking": [
+  "Brand red is incorrect: --red is #9E1B32 instead of #D10C0C, visibly shifting accents toward burgundy.",
+  "Repeated borders above grid cells contradict the no-grid-hairlines direction."
+ ],
+ "fixes": [
+  {
+   "where": "assets/css/site.css — :root; assets/logo/logo-red.svg",
+   "what": "Set --red to #D10C0C and ensure the supplied red SVG uses the same fill without altering its paths.",
+   "why": "The current burgundy weakens fidelity to the specified Anar palette."
+  },
+  {
+   "where": "assets/css/site.css — .pillar, .options > li, .you-get li, .promise li, .behaviour li",
+   "what": "Remove repeated cell-top borders; retain spacing, numbering and headings for hierarchy. Preserve the intentional journey line and poster frame.",
+   "why": "The repeated rules make the cream sections feel like a template grid rather than an editorial brand composition."
+  },
+  {
+   "where": "assets/css/site.css — mobile .hero__word, .hero__window and .hero__shade",
+   "what": "Move the mobile wordmark upward so its lettering overlaps the lower portion of the arch; retain the original SVG proportions and clear space above the tagline.",
+   "why": "At 390px, the arch ends around y=475 while the lettering begins around y=628, splitting the signature composition into disconnected elements."
+  },
+  {
+   "where": "assets/css/site.css — .statement__text and .cta--poster .cta__title",
+   "what": "Reduce uppercase tracking from .06em/.08em to approximately .02em, retaining TT Ramillas Bold and the existing wording.",
+   "why": "Wide tracking makes the display typography feel mechanically spaced; tighter settings would give the premium serif more cohesion."
+  },
+  {
+   "where": "assets/css/site.css — adjacent .section spacing around #celebrations and .quote",
+   "what": "Set an explicit combined gap of approximately 120–144px between the celebrations link and the founder quote on desktop instead of stacking both sections' full padding.",
+   "why": "The supplied desktop view leaves roughly 220px of blank cream between them, interrupting the visual rhythm."
+  }
+ ]
+}

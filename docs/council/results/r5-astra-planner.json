@@ -1,0 +1,33 @@
+{
+ "model": "astra",
+ "role": "planner",
+ "score": 8,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "index.html — #who and #journey",
+   "what": "Add a direct link beside the family-involvement content to how-we-work.html#steps, where the couple's control over participation and spending approvals is explained.",
+   "why": "Parents receive immediate reassurance; couples must leave the homepage to discover that their boundaries are respected."
+  },
+  {
+   "where": "index.html — #journey",
+   "what": "Link the ceremony stops to their corresponding wedding sections and connect the journey to the existing explanation that ceremonies and order are agreed with each family.",
+   "why": "The single numbered sequence currently reads like a prescribed itinerary for all three audiences, weakening the promise of individual cultural care."
+  },
+  {
+   "where": "index.html — #inquire .form__note",
+   "what": "Place the existing phone, WhatsApp and email alternatives immediately before the form, keeping them available after it as well.",
+   "why": "Parents who prefer speaking should not have to pass the entire form to find a direct contact option."
+  },
+  {
+   "where": "index.html — #celebrations; assets/css/site.css — .accordion__label",
+   "what": "Add a visible expand indicator to each collapsed desktop celebration panel while preserving the strip layout.",
+   "why": "The narrow vertical titles look decorative; families may miss the ceremony information that demonstrates relevance to their wedding."
+  },
+  {
+   "where": "index.html — statement section",
+   "what": "Add a compact link to how-we-work.html#you-get immediately after the existing pitch.",
+   "why": "Visitors should quickly reach the concrete distinction between full planning and coordination before committing to an inquiry."
+  }
+ ]
+}

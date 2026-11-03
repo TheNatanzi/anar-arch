@@ -1,0 +1,42 @@
+{
+ "model": "astra",
+ "role": "dev",
+ "score": 7,
+ "blocking": [
+  "Changing the OS preference to reduced motion leaves the existing Lenis instance and ticker running.",
+  "Inner pages run perpetual branch animation without a pause control.",
+  "Opening the mobile menu during the hero morph displays the header logo without suppressing the travelling logo."
+ ],
+ "fixes": [
+  {
+   "where": "assets/js/site.js — reduced-motion listener and Lenis initialization",
+   "what": "Store the Lenis ticker callback; remove it and destroy Lenis when reduced motion becomes active. Clear the instance and manage reinitialization explicitly.",
+   "why": "The current preference-change handler stops GSAP decoration but leaves animated scrolling active."
+  },
+  {
+   "where": "weddings.html, how-we-work.html, about.html — header controls",
+   "what": "Include the existing motion toggle on every page that runs buildMotion(), and preserve the visitor's pause preference across page navigation.",
+   "why": "Continuous branch sway currently has no user-operated stop on these pages."
+  },
+  {
+   "where": "assets/js/site.js — syncNav(); assets/css/site.css — .logo-morph",
+   "what": "Hide the morph layer while the mobile drawer is open, show only the docked header logo, and restore the morph at the current scroll progress when closing.",
+   "why": "The fixed morph sits above the header and remains visible when nav-open reveals a second logo."
+  },
+  {
+   "where": "assets/js/site.js — accordion syncBodies()",
+   "what": "For stacked mobile cards, remove the inactive overlay triggers from display and keyboard order and remove their disclosure attributes; restore triggers and synchronize aria-expanded with panel state on desktop.",
+   "why": "Mobile exposes every body while announcing three as collapsed; activating those buttons produces no corresponding disclosure."
+  },
+  {
+   "where": "assets/css/site.css — .motion .reveal and .motion .stagger",
+   "what": "Reveal interactive containers immediately on focusin, including their hidden ancestors, without waiting for the scroll-triggered tween.",
+   "why": "Opacity-hidden links, accordion buttons and form controls remain keyboard-focusable before their reveal finishes."
+  },
+  {
+   "where": "assets/js/site.js — TREE_LAYERS source assignment",
+   "what": "Defer cloud image requests until motion is enabled, and skip loading the hidden right branch on phones; request those assets when their relevant mode becomes active.",
+   "why": "Reduced-motion and Save-Data visitors currently download unused decorative layers despite video loading being suppressed."
+  }
+ ]
+}

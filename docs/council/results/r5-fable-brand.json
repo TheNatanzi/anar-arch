@@ -1,0 +1,38 @@
+{
+ "model": "fable",
+ "role": "brand",
+ "score": 8,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "site.css · @media (max-width:767.98px) .tree-frame [data-layer=\"leftBranch\"] (phone branch)",
+   "what": "The phone branch shows only a ~24px sliver at the left edge (shift 56px, art-stop = gutter-24+shift). Either show a real tip (set --art-stop to calc(var(--gutter) - 8px + var(--phone-shift)) and the mask fade to 12px so ~40px of leaf and fruit are visible) or hide it on phones entirely.",
+   "why": "At 390px the sliver reads as a rendering smudge, not a painted frame (phone shots 1–3)."
+  },
+  {
+   "where": "site.css · .tree-frame [data-layer=\"leftBranch\"],[data-layer=\"rightBranch\"]{top:25vh}",
+   "what": "Offset the two branches: keep left at top:25vh, move right to top:38vh and scale it to 0.9 (width clamp(200px,23vw,470px)); keep both masks.",
+   "why": "Two identical-height, identical-size branches read as mirrored clip-art; an asymmetric pair reads as a composed painting (desktop shots 1–3)."
+  },
+  {
+   "where": "site.css · .check input",
+   "what": "Replace the native box: appearance:none; width:18px;height:18px;border:2px solid var(--brown);border-radius:2px;background:transparent; :checked{background:var(--red);border-color:var(--red)} with a cream check glyph via ::after; keep accent-color as fallback.",
+   "why": "Unchecked native checkboxes are white squares with grey borders on the cream paper, the only off-palette element on the page (desktop shot 3)."
+  },
+  {
+   "where": "site.css · .field input,.field textarea,.field select{border:1px solid var(--brown)}",
+   "what": "Use border:2px solid var(--brown) (or 1.5px at 85% brown) so inputs match the 2px weight of every rule, button, window and poster frame.",
+   "why": "The 1px input borders are the one hairline in a system built on 2px kashida lines; the form reads lighter than the brand."
+  },
+  {
+   "where": "site.css · .hero__tag{bottom:2vh} (phone) and .hero__word{bottom:12vh}",
+   "what": "Add safe-area: .hero__tag{bottom:calc(2vh + env(safe-area-inset-bottom))} and .hero__word{bottom:calc(12vh + env(safe-area-inset-bottom))}.",
+   "why": "On iPhones the English tagline sits under the home indicator at 2vh (17px); the first impression's last line is half hidden."
+  },
+  {
+   "where": "site.css · .site-header--solid,.site-header.is-scrolled{box-shadow:0 1px 0 rgba(67,38,23,.08)}",
+   "what": "Drop the 1px shadow line (box-shadow:none); let the cream bar meet the cream page with no rule, or use the brand's 2px red rule only on inner pages' .site-header--solid.",
+   "why": "A faint 1px full-width line under the header is the one grid hairline on an otherwise rule-free cream page (desktop shots 1–4)."
+  }
+ ]
+}

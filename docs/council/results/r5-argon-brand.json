@@ -1,0 +1,28 @@
+{
+ "model": "argon",
+ "role": "brand",
+ "score": 8,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "assets/css/site.css:358",
+   "what": "Change `.cta--poster{padding-top:calc(var(--header-h) + clamp(48px,8vh,80px));` to `.cta--poster{padding-top:calc(var(--header-h) + clamp(80px,12vh,120px));`",
+   "why": "In desktop screenshot 4, the sticky cream header bar collides with and slices the top of the `.cta__wordmark` logo inside the brown poster CTA when scrolled near the bottom."
+  },
+  {
+   "where": "assets/css/site.css:15",
+   "what": "Update `--red:#9E1B32;` to `--red:#D10C0C;` (or align with the brand book red token if #D10C0C is intended for accents/rules while keeping the SVG logo matched)",
+   "why": "The brand book specifies red #D10C0C, whereas `--red` in site.css is set to #9E1B32."
+  },
+  {
+   "where": "assets/css/site.css:202",
+   "what": "Add `overflow:hidden` or increase `scroll-margin-top` and section padding around `#inquire` so the previous section's heading/eyebrow does not peek clipped right under the sticky header (visible in desktop screenshot 3)",
+   "why": "In desktop screenshot 3, the bottom baseline of the 'Inquire / شروع برنامه‌ریزی' pair is sliced in half by the bottom edge of the fixed header bar."
+  },
+  {
+   "where": "assets/css/site.css:218",
+   "what": "In `@media (max-width:767.98px)`, adjust `.tree-frame [data-layer=\"leftBranch\"]` mask or `--phone-shift` from `56px` to `72px`",
+   "why": "In mobile screenshots 1, 2, and 3, the tiny clipped remnant of the branch on the far left edge looks like an accidental rendering artifact rather than an intentional botanical accent."
+  }
+ ]
+}

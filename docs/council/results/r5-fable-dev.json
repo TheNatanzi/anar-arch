@@ -1,0 +1,41 @@
+{
+ "model": "fable",
+ "role": "dev",
+ "score": 6,
+ "blocking": [
+  "How we work, every width: the five-step kashida line renders as broken dashes. The path is V1000 with vector-effect:non-scaling-stroke, so Chrome applies stroke-dasharray in screen pixels; the list is 2913px tall on a 390px phone (measured) but the dash is 1000px, so the line vanishes beside step 03 and reappears at step 04. The index journey line on phones (1090px rendered) loses its last 90px the same way.",
+  "Index, 1024–1600px: the nine-column journey uses a 24px gutter while the fixed branches are masked for the 760px text column, so the Enquiry column (x 194–307 at 1440) and the Thank-you column (x 1133–1246) sit on the branch art (opaque to x 210 / from x 1230, fading to 300 / 1140) whenever the row scrolls through 159–369px of the viewport. Hard rule: art never under text."
+ ],
+ "fixes": [
+  {
+   "where": "assets/js/site.js pathLength()",
+   "what": "if (getComputedStyle(p).vectorEffect === 'non-scaling-stroke') { var b = p.getBoundingClientRect(); return Math.max(b.width, b.height) || 0; } return p.getTotalLength(); — remeasureDash already re-runs on every refresh, so resize is covered",
+   "why": "non-scaling-stroke makes dasharray screen-space; the user-unit length (1000/1200) is wrong for every stretched track line"
+  },
+  {
+   "where": "assets/css/site.css .journey (add) and the @media (min-width:1024px) journey block",
+   "what": ".journey{position:relative;z-index:3;background:linear-gradient(to bottom,transparent,var(--cream) 96px,var(--cream) calc(100% - 96px),transparent)} so the journey band is opaque where the stops sit and the fixed branches pass behind it; keep the 24px gutter",
+   "why": "CSS-only, works with motion paused and under reduced motion, and keeps the 9 columns readable without shrinking the branches site-wide"
+  },
+  {
+   "where": "assets/css/site.css .cta--poster",
+   "what": "padding-top:clamp(48px,8vh,80px) (drop the var(--header-h) term); the scroll-margin-top on the same rule and lenis headerOffset already clear the fixed bar on anchor landings",
+   "why": "the baked-in 64/96px makes the poster frame visibly top-heavy (phone: 125px above the wordmark vs 80px below the contact line)"
+  },
+  {
+   "where": "assets/js/site.js accordion syncBodies()",
+   "what": "on phones (!isDesktop()) set each trigger hidden=true (restore on desktop) and skip the aria-expanded writes; on desktop keep the current behaviour",
+   "why": "at 390px all four panels are open and stacked, yet keyboard/AT users hit four 'Show …' buttons with aria-expanded=false that change nothing"
+  },
+  {
+   "where": "index.html head (and the other three pages): the fonts.googleapis.com stylesheet link",
+   "what": "self-host Noto Naskh Arabic 400/700 as woff2 under assets/fonts with @font-face + <link rel=preload as=font>, remove the Google CSS and both preconnects",
+   "why": "the external CSS is render-blocking on first paint, and font-display:swap reflows every Persian line (hero tagline, pillars, journey) when the remote font lands"
+  },
+  {
+   "where": "assets/js/site.js TREE_LAYERS leftBranch srcset / assets/tree/painted",
+   "what": "add a left-branch-700.webp (and -700 for the leaf and ground bands) and list it in the srcset; sizes already resolves to 150px on phones",
+   "why": "the phone loads the 1400px branch (152 KB) for a 150px tip, and 180 KB + 131 KB bands for 390px-wide slots"
+  }
+ ]
+}

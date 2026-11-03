@@ -1,0 +1,33 @@
+{
+ "model": "argon",
+ "role": "dev",
+ "score": 8,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "assets/css/site.css:358",
+   "what": "Change `.cta--poster{padding-top:calc(var(--header-h) + clamp(48px,8vh,80px));...}` to `.cta--poster{padding-top:clamp(64px,10vh,112px);padding-bottom:clamp(64px,10vh,112px);min-height:0;scroll-margin-top:calc(var(--header-h) + 8px)}` and add `.cta--poster::before{inset:16px}` spacing so the cream wordmark inside `.cta--poster` does not clip under the fixed `.site-header` when scrolling past the leaf band.",
+   "why": "In `index-desktop-4.jpg`, the fixed header bar cuts directly across the top half of `.cta__wordmark` ('ANAR EVENTS') inside the brown poster CTA."
+  },
+  {
+   "where": "index.html:196",
+   "what": "Add `scroll-margin-top: calc(var(--header-h) + 24px)` to `.inquire` or increase `.section` top padding when scrolled so the section eyebrow ('Inquire' / 'شروع برنامه‌ریزی') is not clipped by the fixed header bar.",
+   "why": "In `index-desktop-3.jpg`, the top eyebrow and Persian text of the Inquire section are sliced in half by the bottom edge of the fixed header."
+  },
+  {
+   "where": "weddings.html:43, how-we-work.html:43, about.html:43",
+   "what": "Add `<button class=\"hero-toggle\" type=\"button\" aria-label=\"Pause motion\" aria-pressed=\"false\"><span class=\"hero-toggle__glyph\" aria-hidden=\"true\"></span></button>` inside `.site-header__end` on all inner pages (`weddings.html`, `how-we-work.html`, `about.html`).",
+   "why": "Inner pages run continuous GSAP branch sway and scroll parallax (`site.js` block 3), so users on inner pages need the same accessible pause control that `index.html` provides."
+  },
+  {
+   "where": "weddings.html:69,92,115",
+   "what": "Add `srcset` and `sizes=\"(min-width:900px) 440px, 100vw\"` to the `.reveal-img` images (`pom-open-closeup.jpg`, `pom-in-hand.jpg`, `pom-pile.jpg`) matching the responsive variants used in `index.html` and `about.html`.",
+   "why": "`weddings.html` serves full-resolution 1500px–2000px JPEGs directly to 390px mobile viewports instead of using the `-800.jpg` and `-1200.jpg` responsive variants."
+  },
+  {
+   "where": "how-we-work.html:64,180",
+   "what": "Add `ScrollTrigger.refresh()` inside a `toggle` event listener on all `<details>` elements (`$$('details').forEach(d => d.addEventListener('toggle', () => hasGsap && ScrollTrigger.refresh()))`).",
+   "why": "Opening or closing `<details>` in `.options` or `.faq` changes document height without notifying ScrollTrigger, desynchronizing downstream scroll triggers and parallax bounds."
+  }
+ ]
+}

@@ -1,0 +1,23 @@
+{
+ "model": "argon",
+ "role": "planner",
+ "score": 9.5,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "assets/css/site.css:359 (.cta--poster)",
+   "what": "Increase `.cta--poster` top padding from `calc(var(--header-h) + clamp(48px,8vh,80px))` to `calc(var(--header-h) + clamp(72px,10vh,112px))`",
+   "why": "In desktop screenshot 4, the sticky header overlaps and slices the top of the cream `.cta__wordmark` inside the brown poster frame as the user scrolls into the CTA."
+  },
+  {
+   "where": "index.html:214 (Traditions fieldset)",
+   "what": "Add `<label class=\"check\"><input type=\"checkbox\" name=\"traditions\" value=\"Attan / Afghan rituals\"> Attan / Afghan rituals</label>` or a general `Other / Mixed heritage` checkbox",
+   "why": "Afghan families and mixed-heritage couples are core targets, and giving them an explicit ritual checkbox alongside Sofreh Aghd, Nikah, and Baraat deepens immediate cultural recognition."
+  },
+  {
+   "where": "index.html:202 (Inquire form)",
+   "what": "Add an optional `Venue / City (if known)` text field alongside `Guest count` in `.form__row`",
+   "why": "Bay Area families often inquire with a specific region or venue in mind (Napa, Peninsula, South Bay), which helps qualify multi-day logistics before the first call."
+  }
+ ]
+}

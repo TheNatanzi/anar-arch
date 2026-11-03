@@ -1,0 +1,40 @@
+{
+ "model": "fable",
+ "role": "planner",
+ "score": 7,
+ "blocking": [
+  "index.html:200-201 — the chronological journey puts Mehndi (stop 7) AFTER Aghd/Nikah (stop 6). In Persian, Afghan and South Asian weddings the henna night (hanabandan / mehndi) is the night before the aghd or nikah. A page that promises 'fluent in the unspoken details: names, dates and rituals, right' cannot get the ritual order wrong on its own nine-stop line; a parent will catch it in one glance."
+ ],
+ "fixes": [
+  {
+   "where": "index.html:200-201 (journey stops 6 and 7)",
+   "what": "Swap the two <li> elements so the order reads Khastegari → Mehndi → Aghd / Nikah → Reception.",
+   "why": "Henna night precedes the aghd/nikah in every tradition the site serves; the line is explicitly chronological."
+  },
+  {
+   "where": "index.html:195 and :220",
+   "what": "Change 'Enquiry' to 'Inquiry' in the journey stop and '_subject' value 'New enquiry' to 'New inquiry'.",
+   "why": "The site says Inquire/inquiry everywhere else (header, section, how-we-work); Bay Area families read American English, and a mixed spelling reads as carelessness about details."
+  },
+  {
+   "where": "index.html:99 (Who we are paragraph)",
+   "what": "Start the paragraph at 'Anar Events plans and runs weddings…' and drop the first two sentences ('In our families a wedding is never two people. It is parents, grandparents, the whole table.').",
+   "why": "The same two sentences are the founder quote two screens later (and the About letter); on one page the quote lands as a repeat instead of a signature line."
+  },
+  {
+   "where": "index.html:96 (Who we are pair)",
+   "what": "Replace the Persian 'برای چه کسانی' (for whom) with 'ما که هستیم' (who we are) so the pair says the same thing in both languages.",
+   "why": "A Persian-reading parent sees the English eyebrow say 'Who we are' and the Persian say 'For whom'; the bilingual pairs are the site's proof of fluency, so each must match."
+  },
+  {
+   "where": "index.html:195 (journey stop 1 note)",
+   "what": "Change the note to describe the step, e.g. 'You write or call; we reply within one business day.'",
+   "why": "'Thank you for writing. Tell us about your family.' is the inquire section's greeting pasted into a timeline; the stop should say what happens, like the other eight."
+  },
+  {
+   "where": "assets/css/site.css:218 (.tree-frame phone branch)",
+   "what": "Raise the phone branch width from 150px to 200px and reduce --phone-shift to 32px so a recognisable leafy tip (not a 20px sliver) shows at the left edge; keep the mask stop short of the gutter.",
+   "why": "On the 390px screenshots the branch appears as a tiny red-green fragment poking in beside the accordion and the journey, which reads as a rendering glitch rather than the painted frame."
+  }
+ ]
+}
