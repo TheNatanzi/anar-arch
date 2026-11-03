@@ -1,0 +1,33 @@
+{
+ "model": "argon",
+ "role": "brand",
+ "score": 8,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "assets/css/site.css (.link-arrow)",
+   "what": "Replace `border-bottom: 2px solid var(--red)` with `text-decoration: underline; text-decoration-color: var(--red); text-decoration-thickness: 2px; text-underline-offset: 6px;`",
+   "why": "When inline links like 'Every tradition, in its own words' wrap onto two lines on mobile, `border-bottom` draws two stacked horizontal rules directly under each line, looking broken."
+  },
+  {
+   "where": "assets/css/site.css (.scribble path)",
+   "what": "Change SVG path in HTML from curved `M4 12 C 90 12...` to a straight kashida stroke `M4 12 H316` or refine the curve into a true calligraphic nib taper.",
+   "why": "The current S-curve looks like a generic squiggle rather than an authentic Persian typographic kashida extension."
+  },
+  {
+   "where": "assets/js/site.js (block 4: .kashida-draw)",
+   "what": "Change ScrollTrigger `end: 'top 45%'` to `end: 'top 70%'`",
+   "why": "In mid-scroll states (like the founder quote), the kashida line is barely a dot when the text is already fully read; it needs to finish drawing much earlier in the viewport."
+  },
+  {
+   "where": "assets/css/site.css (@media (max-width:768px) .tree-frame [data-layer=\"trunkLeft\"])",
+   "what": "Adjust `--edge-trunk: 44px` and `--gutter: 56px` on mobile, or soften the mask gradient `linear-gradient(to right, rgba(0,0,0,.75) 20%, transparent 90%)`",
+   "why": "On 390px screens, the left trunk still creates a heavy visual weight on the left margin that makes centered elements (like the celebrations cards and form inputs) feel pushed right."
+  },
+  {
+   "where": "assets/css/site.css (.ground)",
+   "what": "Remove `margin-top: clamp(24px,5vh,56px)` or reduce to `0`, and increase `.inquire` bottom padding slightly",
+   "why": "The abrupt white-space gap before the `.ground` top gradient mask makes the roots feel pasted-on rather than organically emerging from the parchment."
+  }
+ ]
+}

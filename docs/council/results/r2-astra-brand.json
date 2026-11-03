@@ -1,0 +1,41 @@
+{
+ "model": "astra",
+ "role": "brand",
+ "score": 7,
+ "blocking": [
+  "Repeated ruled columns and bordered sections conflict with the no-grid-hairlines direction.",
+  "The mobile layout reserves 128px for gutters despite displaying only one trunk, leaving an unnecessarily cramped 262px content column at 390px."
+ ],
+ "fixes": [
+  {
+   "where": "assets/css/site.css — .pillar, .tradition, .you-get li, .behaviour li",
+   "what": "Remove repeated column and section borders; separate content through spacing. Retain the intentional kashida and functional input outlines.",
+   "why": "The repeated rules make the editorial brand feel like a structured worksheet."
+  },
+  {
+   "where": "assets/css/site.css — mobile .container",
+   "what": "Use asymmetric mobile padding: 56px beside the left trunk and 24px on the open right side.",
+   "why": "Recovers reading space while keeping artwork clear of text and inputs."
+  },
+  {
+   "where": "assets/css/site.css — mobile .hero",
+   "what": "Cap the mobile arch height near 40svh and rebalance the wordmark and supporting lines beneath it, preserving the existing logo asset.",
+   "why": "The arch currently dominates the phone screen while the brand and service description are pushed into the lower third."
+  },
+  {
+   "where": "assets/css/site.css — .tree-frame masks and .ground::before",
+   "what": "Narrow the cream feathering to the artwork's inner boundary and ground transition; preserve more of the painted bark and root contours.",
+   "why": "The broad pale halos make the illustration look airbrushed onto the page rather than integrated with the parchment."
+  },
+  {
+   "where": "assets/css/site.css — desktop .accordion__label",
+   "what": "Replace rotated closed-panel labels with horizontal selectors above the image panel; retain the selected ceremony's image and description.",
+   "why": "Six narrow vertical strips interrupt the otherwise calm typography and make ceremony names harder to scan."
+  },
+  {
+   "where": "assets/js/site.js — setToggle and hero visibility handling",
+   "what": "Hide the video control once the hero leaves view, restoring it when the hero returns.",
+   "why": "A persistent pause icon beside Inquire suggests that the entire page is playing and competes with the primary action."
+  }
+ ]
+}

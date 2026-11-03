@@ -1,0 +1,257 @@
+/* =========================================================
+   Anar Events — site.js (v1, 3 Nov 2026)
+   Requires (loaded before this file, all pinned):
+     GSAP 3.12.5 + ScrollTrigger (cdnjs), Lenis 1.1.18 (unpkg)
+   Every motion is a numbered block below. If GSAP is missing or
+   prefers-reduced-motion is on, nothing is hidden and nothing scrubs.
+   ========================================================= */
+(function () {
+  'use strict';
+
+  /* ---------------------------------------------------------
+     TREE LAYERS: the only place that knows the image files
+     (the painted set in assets/tree). Keys match data-layer="".
+     The canopy and ground bands are plain <img>s in the HTML.
+     --------------------------------------------------------- */
+  var TREE_LAYERS = {
+    trunkLeft:  'assets/tree/trunk-left.webp',
+    trunkRight: 'assets/tree/trunk-right.webp',
+    leaf1:      'assets/tree/leaf-1.webp',
+    leaf2:      'assets/tree/leaf-3.webp'
+  };
+
+  /* Parallax per layer: fraction of the page's scroll distance the
+     layer rises, and a cap in viewport heights so a long page never
+     drags a trunk's end into view. Trunks rise faster than the leaves,
+     so the page reads as descending the tree. */
+  var SPEED = { trunkLeft: 0.12, trunkRight: 0.14, leaf1: 0.05, leaf2: 0.04 };
+  var CAP   = { trunkLeft: 0.5,  trunkRight: 0.5,  leaf1: 0.3,  leaf2: 0.3 };
+
+  var html = document.documentElement;
+  var body = document.body;
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hasGsap = typeof window.gsap !== 'undefined' && typeof window.ScrollTrigger !== 'undefined';
+  var motion = hasGsap && !reduced;
+  var isDesktop = function () { return window.matchMedia('(min-width: 768px)').matches; };
+  var $ = function (s, c) { return (c || document).querySelector(s); };
+  var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+
+  html.classList.add(motion ? 'motion' : 'reduced');
+  if (motion) { gsap.registerPlugin(ScrollTrigger); }
+
+  /* 0. Tree layer sources from the map (every page) */
+  $$('[data-layer]').forEach(function (el) {
+    var key = el.getAttribute('data-layer');
+    if (TREE_LAYERS[key]) { el.src = TREE_LAYERS[key]; }
+  });
+
+  /* ---------------------------------------------------------
+     Smooth scroll (Lenis) wired to the GSAP ticker
+     --------------------------------------------------------- */
+  var lenis = null;
+  if (motion && typeof window.Lenis !== 'undefined') {
+    lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add(function (t) { lenis.raf(t * 1000); });
+    gsap.ticker.lagSmoothing(0);
+    html.classList.add('lenis');
+  }
+  function headerOffset() { return -($('.site-header') ? $('.site-header').offsetHeight : 0); }
+  function scrollToEl(el) {
+    if (lenis) { lenis.scrollTo(el, { offset: headerOffset(), duration: 1.4 }); }
+    else { el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }); }
+  }
+  /* Same-page anchors (including "index.html#inquire" when on index) */
+  $$('a[href*="#"]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      var url = new URL(a.href, location.href);
+      var samePage = url.pathname.replace(/\/index\.html$/, '/') === location.pathname.replace(/\/index\.html$/, '/');
+      if (!samePage || !url.hash) { return; }
+      var target = document.getElementById(url.hash.slice(1));
+      if (!target) { return; }
+      e.preventDefault();
+      closeNav();
+      scrollToEl(target);
+      history.pushState(null, '', url.hash);
+    });
+  });
+  /* Land on a hash with the header offset */
+  if (location.hash) {
+    var landing = document.getElementById(location.hash.slice(1));
+    if (landing) { setTimeout(function () { scrollToEl(landing); }, 60); }
+  }
+
+  /* ---------------------------------------------------------
+     Header: solid once scrolled; mobile drawer
+     --------------------------------------------------------- */
+  var header = $('.site-header');
+  var navToggle = $('.nav-toggle');
+  function onScrollState() {
+    if (!header) { return; }
+    header.classList.toggle('is-scrolled', (window.scrollY || window.pageYOffset) > 40);
+  }
+  if (lenis) { lenis.on('scroll', onScrollState); } else { window.addEventListener('scroll', onScrollState, { passive: true }); }
+  onScrollState();
+  function closeNav() {
+    if (!header || !navToggle) { return; }
+    header.classList.remove('nav-open');
+    navToggle.setAttribute('aria-expanded', 'false');
+  }
+  if (navToggle) {
+    navToggle.addEventListener('click', function () {
+      var open = header.classList.toggle('nav-open');
+      navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeNav(); } });
+  }
+
+  /* Hero video: pause when off screen (battery, CPU) */
+  var heroVideo = $('.hero__video');
+  if (heroVideo && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { heroVideo.play().catch(function () {}); } else { heroVideo.pause(); }
+      });
+    }, { threshold: 0.05 }).observe(heroVideo);
+  }
+
+  if (!motion) { return; }   /* ===== everything below is motion only ===== */
+
+  /* ---------------------------------------------------------
+     1. Hero: the word blurs and rises slower than the page,
+        then the hero fades to cream (the painted canopy band
+        sits below it in the flow).
+     --------------------------------------------------------- */
+  var hero = $('.hero');
+  if (hero) {
+    var heroTl = gsap.timeline({
+      scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true }
+    });
+    heroTl
+      .to('.hero__word', { y: 140, filter: 'blur(12px)', opacity: 0, ease: 'none', duration: 1 }, 0)
+      .to('.hero__tag', { opacity: 0, ease: 'none', duration: 0.5 }, 0)
+      .to('.hero__fade', { opacity: 1, ease: 'none', duration: 0.45 }, 0.55);
+  }
+
+  /* ---------------------------------------------------------
+     3. Tree frame parallax (every page): the edge trunks slide up
+        (capped), the leaves drift more slowly and turn a little.
+        When the painted ground band arrives, the trunks fade out so
+        the ground's own roots take over at the foot of the page.
+     --------------------------------------------------------- */
+  var frame = $('.tree-frame');
+  if (frame) {
+    var scrollDist = function () { return Math.max(1, html.scrollHeight - window.innerHeight); };
+    $$('img[data-layer]', frame).forEach(function (el) {
+      var k = el.getAttribute('data-layer'), s = SPEED[k];
+      if (typeof s === 'undefined') { return; }
+      var isLeaf = k.indexOf('leaf') === 0;
+      gsap.to(el, {
+        y: function () { return -Math.min(scrollDist() * s, window.innerHeight * (CAP[k] || 0.5)); },
+        rotation: isLeaf ? (k === 'leaf1' ? -10 : 8) : 0,
+        ease: 'none',
+        scrollTrigger: { trigger: body, start: 'top top', end: 'bottom bottom', scrub: true, invalidateOnRefresh: true }
+      });
+    });
+    var ground = $('.ground');
+    if (ground) {
+      gsap.to($$('img[data-layer^="trunk"]', frame), {
+        opacity: 0, ease: 'none',
+        scrollTrigger: { trigger: ground, start: 'top bottom', end: 'top 45%', scrub: true }
+      });
+    }
+  }
+
+  /* ---------------------------------------------------------
+     4. Kashida draw-on: any .kashida-draw path draws with scroll
+        (stroke-dashoffset scrubbed from full length to 0)
+     --------------------------------------------------------- */
+  $$('.kashida-draw path').forEach(function (p) {
+    var len = p.getTotalLength();
+    p.style.strokeDasharray = len;
+    p.style.strokeDashoffset = len;
+    gsap.to(p, {
+      strokeDashoffset: 0, ease: 'none',
+      scrollTrigger: { trigger: p.closest('svg'), start: 'top 88%', end: 'top 45%', scrub: true }
+    });
+  });
+
+  /* ---------------------------------------------------------
+     7. Journey line with dots (and the steps line on How we work):
+        [data-track] holds .track-line path(s) and .track-dot(s).
+        The line draws across the section; each dot pops as the
+        line reaches it.
+     --------------------------------------------------------- */
+  $$('[data-track]').forEach(function (track) {
+    var paths = $$('.track-line path', track);
+    var dots = $$('.track-dot', track);
+    if (!paths.length) { return; }
+    var tl = gsap.timeline({
+      scrollTrigger: { trigger: track, start: 'top 75%', end: 'bottom 70%', scrub: true }
+    });
+    paths.forEach(function (p) {
+      var len = p.getTotalLength();
+      p.style.strokeDasharray = len;
+      p.style.strokeDashoffset = len;
+      tl.to(p, { strokeDashoffset: 0, ease: 'none', duration: 1 }, 0);
+    });
+    dots.forEach(function (d, i) {
+      tl.fromTo(d, { scale: 0 }, { scale: 1, ease: 'back.out(2)', duration: 0.06 }, (i + 0.5) / dots.length - 0.03);
+    });
+  });
+
+  /* ---------------------------------------------------------
+     5. Accordion panels: hover expands (pointer devices), click/
+        focus expands (touch, keyboard). Stacked cards on mobile.
+     --------------------------------------------------------- */
+  $$('[data-accordion]').forEach(function (acc) {
+    var panels = $$('.accordion__panel', acc);
+    var hoverable = window.matchMedia('(hover: hover)').matches;
+    function open(target) {
+      panels.forEach(function (p) {
+        var on = p === target;
+        p.classList.toggle('is-open', on);
+        var btn = $('.accordion__trigger', p);
+        if (btn) { btn.setAttribute('aria-expanded', on ? 'true' : 'false'); }
+      });
+    }
+    panels.forEach(function (p) {
+      var btn = $('.accordion__trigger', p);
+      if (hoverable) { p.addEventListener('mouseenter', function () { if (isDesktop()) { open(p); } }); }
+      if (btn) {
+        btn.addEventListener('click', function () { open(p); });
+        btn.addEventListener('focus', function () { if (isDesktop()) { open(p); } });
+      }
+    });
+  });
+
+  /* ---------------------------------------------------------
+     9. Section reveals (fade + rise, 0.9s ease-out), once;
+     10. images scale 1.02 -> 1 on reveal; .stagger children stagger.
+     --------------------------------------------------------- */
+  $$('.reveal').forEach(function (el) {
+    gsap.to(el, {
+      opacity: 1, y: 0, duration: 0.9, ease: 'power2.out',
+      scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+      onComplete: function () { el.classList.add('is-in'); }
+    });
+  });
+  $$('.reveal-img').forEach(function (el) {
+    gsap.to(el, {
+      scale: 1, duration: 1.2, ease: 'power2.out',
+      scrollTrigger: { trigger: el, start: 'top 88%', once: true }
+    });
+  });
+  $$('.stagger').forEach(function (group) {
+    gsap.to(group.children, {
+      opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', stagger: 0.08,
+      scrollTrigger: { trigger: group, start: 'top 88%', once: true }
+    });
+  });
+
+  /* (The "How we work +" tab and slide-out panel were removed from every page; there is no block for them.) */
+
+  /* Refresh triggers once fonts and images have settled */
+  window.addEventListener('load', function () { ScrollTrigger.refresh(); });
+  if (document.fonts && document.fonts.ready) { document.fonts.ready.then(function () { ScrollTrigger.refresh(); }); }
+})();

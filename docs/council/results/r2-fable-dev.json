@@ -1,0 +1,41 @@
+{
+ "model": "fable",
+ "role": "dev",
+ "score": 7,
+ "blocking": [
+  "Phone, screen one: open the hamburger menu while the header is still over the video. `.site-header--over:not(.is-scrolled):not(.nav-open)` stops matching, so the bar's colour falls back to brown, the red logo reappears, and the bar keeps NO background (only `.site-header--solid, .is-scrolled` get cream). Result: a brown X, brown 'Inquire' and a red logo floating on the dark video while the drawer below is cream.",
+  "Phone (index-phone-4.jpg): the left trunk ends in a hard horizontal cut exactly at the top of the painted ground. `.ground::before/::after` carry z-index:1 but `.ground` creates no stacking context, so those pseudo-elements sit in the root context at the same level as the fixed `.tree-frame` (z-index:1) and, being later in the DOM, paint over it. The GSAP trunk fade (end 'top 45%') has not finished when the ground enters, so the seam shows."
+ ],
+ "fixes": [
+  {
+   "where": "site.css, header solid rule (`.site-header--solid,.site-header.is-scrolled{...}`)",
+   "what": "Add `.site-header.nav-open` to that selector so the bar gets the cream background, brown ink and shadow whenever the drawer is open (and keep the amber focus rule from applying in that state).",
+   "why": "Fixes unreadable brown controls and a red logo on the dark video when the phone menu opens on screen one."
+  },
+  {
+   "where": "site.css `.ground{...}`",
+   "what": "Add `isolation:isolate` (or `z-index:0`) to `.ground` so its `::before/::after` z-index:1 is scoped to the band, not the root stacking context.",
+   "why": "Removes the hard cut of the trunk at the ground's top edge on phones; the trunk then fades over the roots as intended."
+  },
+  {
+   "where": "site.css `.accordion__panel:not(.is-open) .accordion__body{opacity:0;visibility:hidden}` (769px+ block)",
+   "what": "Prefix with `.js` (`.js .accordion__panel:not(.is-open) .accordion__body`), matching the way reveals are guarded.",
+   "why": "Without JS, five of six celebration descriptions are invisible and unreachable on desktop; the triggers do nothing."
+  },
+  {
+   "where": "site.css `.accordion__panel::after{content:\"+\"}` and `.is-open::after{content:\"\\2013\"}` (phone block); index.html trigger labels",
+   "what": "Use `content:\"+\" / \"\"` and `content:\"\\2013\" / \"\"` so the glyph is not announced; name each trigger just 'Sofreh Aghd' etc. (drop 'Show') and let aria-expanded carry the state.",
+   "why": "VoiceOver/TalkBack currently read a stray plus/dash per card, and 'Show Sofreh Aghd' stays 'Show' while expanded."
+  },
+  {
+   "where": "index.html / weddings.html <head> script tags",
+   "what": "Self-host gsap.min.js, ScrollTrigger.min.js and lenis.min.js under assets/js/ (or at least add `<link rel=preconnect>` for cdnjs and unpkg and `crossorigin` + SRI hashes).",
+   "why": "Two third-party origins on the critical motion path with no preconnect or integrity; an unpkg hiccup leaves the page static for seconds."
+  },
+  {
+   "where": "site.css @font-face for TT Ramillas",
+   "what": "Add a metric-matched fallback: `@font-face{font-family:\"Ramillas Fallback\";src:local(\"Georgia\");size-adjust:…;ascent-override:…}` and put it before Georgia in --font-latin (or use `font-display:optional` for the first paint).",
+   "why": "Every Latin run is 700 serif with unmatched Georgia metrics; on slow networks headings reflow when the woff2 swaps in (measurable CLS)."
+  }
+ ]
+}

@@ -1,0 +1,40 @@
+{
+ "model": "fable",
+ "role": "brand",
+ "score": 7.5,
+ "blocking": [
+  "Phone (390px): the left trunk is sliced with a hard horizontal edge exactly where the ground band begins (index-phone-4). Cause: .ground::before carries z-index:1 but .ground creates no stacking context, so the cream gradient paints over the fixed .tree-frame (also z-index:1, earlier in DOM). The painted art must never show a seam."
+ ],
+ "fixes": [
+  {
+   "where": "assets/css/site.css .ground (and site.js block 3, the trunk fade ScrollTrigger)",
+   "what": "Add `isolation:isolate` to .ground so its ::before/::after stay inside it; change the trunk fade to `end: 'top 75%'` so the trunks are gone before the roots arrive.",
+   "why": "Removes the hard horizontal cut through the trunk on phones; the trunk should dissolve, not be chopped."
+  },
+  {
+   "where": "assets/css/site.css .hero desktop tokens (@media min-width:769px)",
+   "what": "Set `--word-w:min(56vw,720px,80vh)` and `--arch-maxw:min(46vw,600px)` so --arch-h recomputes larger from the freed space.",
+   "why": "At 1440×900 the arch is a 270px keyhole under an 820px wordmark; the device the build is named for reads as an afterthought. Picture first, wordmark second."
+  },
+  {
+   "where": "assets/css/site.css .hero__shade box-shadow",
+   "what": "Raise the shade from rgba(67,38,23,.68) to rgba(67,38,23,.8).",
+   "why": "At .68 the outside is neither footage nor ground: the same frame doubled behind the arch, and the 14–16px cream descriptor/tagline sit on busy table detail. At .8 the outside becomes a tonal ground and the arch is the one picture."
+  },
+  {
+   "where": "assets/css/site.css .pills / .pill",
+   "what": "Replace the inline list with `.pills{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px}.pill{display:inline-flex;align-items:baseline;gap:6px;white-space:nowrap}` and delete `.pill:not(:last-child)::after`.",
+   "why": "Red separator dots dangle at line ends ('Sangeet ·', 'Pheras ·', 'Anand Karaj ·') on desktop and phone; orphaned punctuation is not premium typography."
+  },
+  {
+   "where": "assets/css/site.css @media (max-width:768px) .tree-frame [data-layer=\"trunkLeft\"]",
+   "what": "Use `object-position:-70px top` and mask `linear-gradient(to right,#000 25%,transparent 85%)`.",
+   "why": "At 390px the trunk shows a flat dark strip with a lighter bark stripe along its inner edge (index-phone-1/3) that reads as a seam, not paint; a deeper crop and earlier dissolve keep it painterly."
+  },
+  {
+   "where": "index.html .hero__tag + site.css",
+   "what": "Wrap the English sentence in `<span class=\"hero__tag-en\">` and on ≤768px set it `display:block` (drop the ' · ' separator there).",
+   "why": "On phones the line breaks after 'Timeless traditions,' leaving 'curated for the modern era.' orphaned; Persian and English each deserve a clean line under the wordmark."
+  }
+ ]
+}

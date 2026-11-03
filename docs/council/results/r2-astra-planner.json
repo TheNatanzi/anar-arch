@@ -1,0 +1,36 @@
+{
+ "model": "astra",
+ "role": "planner",
+ "score": 6,
+ "blocking": [
+  "The sofreh-designer briefing, spread checks and seasonal-table planning imply decor responsibilities, conflicting with the stated planning-and-coordination-only boundary.",
+  "Family inclusion is reassuring, but repeated unconditional promises about elders' placement and bilingual materials weaken the otherwise family-specific approach."
+ ],
+ "fixes": [
+  {
+   "where": "index.html #celebrations, #journey; weddings.html #sofreh-aghd, #seasons",
+   "what": "Replace designer briefing, spread checking and table-planning promises with coordination of ceremony timing, family participants and officiant cues. Retain ritual names and cultural context.",
+   "why": "Demonstrates cultural fluency without suggesting prohibited decor services."
+  },
+  {
+   "where": "weddings.html #anand-karaj and repeated elders' seating promises; index.html #who",
+   "what": "Use: 'We agree elders’ welcome, seating and access needs with your family and ceremony venue.' Replace the universal 'Elders are greeted first' with an agreed family welcome order.",
+   "why": "Respect feels credible when arrangements follow the actual family, venue and accessibility needs."
+  },
+  {
+   "where": "weddings.html #sofreh-aghd, #reception-walima",
+   "what": "Replace 'both scripts' with 'the languages and scripts your families choose'; specify that printed guides are coordinated when requested.",
+   "why": "The studio serves more than two language communities, and optional materials should not read as automatic deliverables."
+  },
+  {
+   "where": "index.html #inquire",
+   "what": "Place phone, WhatsApp and email links immediately below the inquiry introduction, retaining the existing links after the form.",
+   "why": "Parents who prefer a conversation should not need to pass the entire questionnaire to find a contact route."
+  },
+  {
+   "where": "index.html inquiry form; assets/css/site.css .checks and mobile .container",
+   "what": "Keep name and email immediately visible; group the remaining existing fields under an optional 'Tell us more' disclosure. Use one column for tradition checkboxes at 390px.",
+   "why": "The 262px mobile content width and 18 tradition choices make an ostensibly simple inquiry feel like a lengthy intake."
+  }
+ ]
+}

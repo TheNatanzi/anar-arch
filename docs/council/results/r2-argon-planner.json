@@ -1,0 +1,23 @@
+{
+ "model": "argon",
+ "role": "planner",
+ "score": 9.5,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "assets/css/site.css (.accordion__body)",
+   "what": "Add `justify-content: end;` or switch `.accordion__body` from `display: grid` to `display: flex; flex-direction: column; justify-content: flex-end;` so long ceremony descriptions never overflow out the top of the 620px accordion frame on desktop (visible in index-desktop-2.jpg where 'Sofreh Aghd' and its Persian heading are clipped off the top).",
+   "why": "A Persian parent or couple seeing 'Sofreh Aghd' cut off at the top of the frame loses the headline of their core ceremony."
+  },
+  {
+   "where": "index.html:271 (Traditions fieldset)",
+   "what": "Add `<label class=\"check\"><input type=\"checkbox\" name=\"traditions\" value=\"Attan\"> Attan</label>` and `<label class=\"check\"><input type=\"checkbox\" name=\"traditions\" value=\"Milni\"> Milni</label>` (or group Baraat / Milni) to the inquiry form checkboxes.",
+   "why": "You highlight Attan for Afghan families and Milni for Sikh/Hindu families on weddings.html; seeing them in the inquiry checklist deepens cultural trust."
+  },
+  {
+   "where": "weddings.html:184 (Haldi & Pheras) and weddings.html:208 (Anand Karaj)",
+   "what": "Explicitly mention coordinating with both the bride's and groom's sides for the Milni exchanges (e.g., 'calling each pair of elders for the milni garlands') and managing shoe-stealing (Joota Chupai) / Vidaai timing.",
+   "why": "Parents paying for South Asian weddings stress most about family introductions during Milni and keeping the Vidaai on schedule with the venue."
+  }
+ ]
+}

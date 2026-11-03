@@ -1,0 +1,345 @@
+/* =========================================================
+   Anar Events — site.js (v1, 3 Nov 2026)
+   Requires (loaded before this file, all pinned):
+     GSAP 3.12.5 + ScrollTrigger (cdnjs), Lenis 1.1.18 (unpkg)
+   Every motion is a numbered block below. If GSAP is missing or
+   prefers-reduced-motion is on, nothing is hidden and nothing scrubs.
+   ========================================================= */
+(function () {
+  'use strict';
+
+  /* ---------------------------------------------------------
+     TREE LAYERS: the only place that knows the image files.
+     Swap the placeholder SVGs for the PNGs by editing this map.
+     Keys match data-layer="" attributes in the HTML.
+     --------------------------------------------------------- */
+  var TREE_LAYERS = {
+    leftBranch:   'assets/tree/placeholder-left-branch.svg',
+    rightBranch:  'assets/tree/placeholder-right-branch.svg',
+    bottomCanopy: 'assets/tree/placeholder-bottom-canopy.svg',
+    trunkLeft:    'assets/tree/placeholder-trunk-left.svg',
+    trunkRight:   'assets/tree/placeholder-trunk-right.svg',
+    rootsBottom:  'assets/tree/placeholder-roots-bottom.svg',
+    groundBottom: 'assets/tree/placeholder-ground-bottom.svg',
+    cloud1:       'assets/tree/placeholder-cloud-1.svg',
+    cloud2:       'assets/tree/placeholder-cloud-2.svg'
+  };
+
+  /* Parallax speed per layer (fraction of the page's scroll distance).
+     Positive = moves up as you scroll down. Trunks are fastest, so the
+     page reads as descending the tree; roots and ground arrive last. */
+  var SPEED = {
+    leftBranch: 0.06, rightBranch: 0.08, bottomCanopy: -0.02,
+    trunkLeft: 0.22, trunkRight: 0.25, rootsBottom: 0.22, groundBottom: 0.22
+  };
+  var BRANCH_MAX = 220;   /* px: branches drift up this much at most */
+  var CANOPY_MAX = 60;    /* px: the bottom canopy sinks this much at most */
+
+  var html = document.documentElement;
+  var body = document.body;
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var hasGsap = typeof window.gsap !== 'undefined' && typeof window.ScrollTrigger !== 'undefined';
+  var motion = hasGsap && !reduced;
+  var isDesktop = function () { return window.matchMedia('(min-width: 768px)').matches; };
+  var $ = function (s, c) { return (c || document).querySelector(s); };
+  var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+
+  html.classList.add(motion ? 'motion' : 'reduced');
+  if (motion) { gsap.registerPlugin(ScrollTrigger); }
+
+  /* 0. Tree layer sources from the map (every page) */
+  $$('[data-layer]').forEach(function (el) {
+    var key = el.getAttribute('data-layer');
+    if (TREE_LAYERS[key]) { el.src = TREE_LAYERS[key]; }
+  });
+
+  /* ---------------------------------------------------------
+     Smooth scroll (Lenis) wired to the GSAP ticker
+     --------------------------------------------------------- */
+  var lenis = null;
+  if (motion && typeof window.Lenis !== 'undefined') {
+    lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add(function (t) { lenis.raf(t * 1000); });
+    gsap.ticker.lagSmoothing(0);
+    html.classList.add('lenis');
+  }
+  function headerOffset() { return -($('.site-header') ? $('.site-header').offsetHeight : 0); }
+  function scrollToEl(el) {
+    if (lenis) { lenis.scrollTo(el, { offset: headerOffset(), duration: 1.4 }); }
+    else { el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }); }
+  }
+  /* Same-page anchors (including "index.html#inquire" when on index) */
+  $$('a[href*="#"]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      var url = new URL(a.href, location.href);
+      var samePage = url.pathname.replace(/\/index\.html$/, '/') === location.pathname.replace(/\/index\.html$/, '/');
+      if (!samePage || !url.hash) { return; }
+      var target = document.getElementById(url.hash.slice(1));
+      if (!target) { return; }
+      e.preventDefault();
+      closeNav();
+      scrollToEl(target);
+      history.pushState(null, '', url.hash);
+    });
+  });
+  /* Land on a hash with the header offset */
+  if (location.hash) {
+    var landing = document.getElementById(location.hash.slice(1));
+    if (landing) { setTimeout(function () { scrollToEl(landing); }, 60); }
+  }
+
+  /* ---------------------------------------------------------
+     Header: solid once scrolled; mobile drawer
+     (on index with motion on, block 2 drives the solid state
+      from the wordmark morph instead of the 40px threshold)
+     --------------------------------------------------------- */
+  var header = $('.site-header');
+  var navToggle = $('.nav-toggle');
+  var morphDrivesHeader = false;
+  function onScrollState() {
+    if (!header || morphDrivesHeader) { return; }
+    header.classList.toggle('is-scrolled', (window.scrollY || window.pageYOffset) > 40);
+  }
+  if (lenis) { lenis.on('scroll', onScrollState); } else { window.addEventListener('scroll', onScrollState, { passive: true }); }
+  onScrollState();
+  function closeNav() {
+    if (!header || !navToggle) { return; }
+    header.classList.remove('nav-open');
+    navToggle.setAttribute('aria-expanded', 'false');
+  }
+  if (navToggle) {
+    navToggle.addEventListener('click', function () {
+      var open = header.classList.toggle('nav-open');
+      navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeNav(); } });
+  }
+
+  /* Hero video: pause when off screen (battery, CPU) */
+  var heroVideo = $('.hero__video');
+  if (heroVideo && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { heroVideo.play().catch(function () {}); } else { heroVideo.pause(); }
+      });
+    }, { threshold: 0.05 }).observe(heroVideo);
+  }
+
+  if (!motion) { return; }   /* ===== everything below is motion only ===== */
+
+  /* ---------------------------------------------------------
+     1. Hero: the tagline fades (the wordmark is handled by the
+        morph in block 2);
+     2b. two cloud layers roll in from the bottom at different speeds;
+        then the hero fades to cream.
+     --------------------------------------------------------- */
+  var hero = $('.hero');
+  if (hero) {
+    var heroTl = gsap.timeline({
+      scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true }
+    });
+    heroTl
+      .to('.hero__tag', { opacity: 0, ease: 'none', duration: 0.5 }, 0)
+      .fromTo('.hero__cloud--1', { yPercent: 35, opacity: 0 }, { yPercent: -55, opacity: 1, ease: 'none', duration: 1 }, 0)
+      .fromTo('.hero__cloud--2', { yPercent: 55, opacity: 0 }, { yPercent: -30, opacity: 1, ease: 'none', duration: 1 }, 0)
+      .to('.hero__fade', { opacity: 1, ease: 'none', duration: 0.45 }, 0.55);
+  }
+
+  /* ---------------------------------------------------------
+     2. Wordmark morph: the hero wordmark travels up and shrinks
+        into the header's logo slot over the first 70% of the hero
+        (one scrubbed transform: translate + scale, measured with
+        getBoundingClientRect at build and on every refresh).
+        At the end it is swapped for the header logo (same artwork,
+        same box); scrolling back up reverses it.
+     --------------------------------------------------------- */
+  var morph = $('.logo-morph');
+  var heroWordImg = $('.hero__word img');
+  var headerLogoBox = $('.site-logo');   /* the anchor: always laid out (visibility hidden until docked) */
+  if (hero && morph && heroWordImg && headerLogoBox && header) {
+    var MORPH_END = 0.7;   /* fraction of the hero height */
+    var from = { x: 0, y: 0, w: 1 }, to = { x: 0, y: 0, w: 1 };
+    function measure() {
+      /* hero wordmark in document coordinates (the hero sits at the top of the page) */
+      var sy = window.scrollY || window.pageYOffset;
+      var h = heroWordImg.getBoundingClientRect();
+      from = { x: h.left, y: h.top + sy, w: h.width };
+      /* header logo box in viewport coordinates (the header is fixed) */
+      var l = headerLogoImg.getBoundingClientRect();
+      to = { x: l.left, y: l.top, w: l.width };
+      morph.style.width = from.w + 'px';
+      morph.style.height = (from.w * 552 / 1600) + 'px';
+    }
+    var docked = null;   /* null: not yet applied, so the first call always sets the classes */
+    function setDocked(on) {
+      if (on === docked) { return; }
+      docked = on;
+      header.classList.toggle('logo-docked', on);
+      header.classList.toggle('is-scrolled', on);
+      morph.classList.toggle('is-on', !on);
+    }
+    morphDrivesHeader = true;
+    measure();
+    morph.classList.add('is-on');
+    var cream = getComputedStyle(html).getPropertyValue('--cream').trim() || '#F0E6D5';
+    var brown = getComputedStyle(html).getPropertyValue('--brown').trim() || '#432617';
+    var morphTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: hero, start: 'top top',
+        end: function () { return '+=' + Math.round(hero.offsetHeight * MORPH_END); },
+        scrub: true, invalidateOnRefresh: true,
+        onRefreshInit: measure,
+        onUpdate: function (st) { setDocked(st.progress >= 1); },
+        onRefresh: function (st) { setDocked(st.progress >= 1); }
+      }
+    });
+    morphTl
+      .fromTo(morph,
+        { x: function () { return from.x; }, y: function () { return from.y; }, scale: 1 },
+        { x: function () { return to.x; }, y: function () { return to.y; }, scale: function () { return to.w / from.w; }, ease: 'none', duration: 1 }, 0)
+      /* last stretch: the wordmark turns red as the header bar turns cream beneath it */
+      .to('.logo-morph__cream', { opacity: 0, ease: 'none', duration: 0.2 }, 0.8)
+      .to('.logo-morph__red', { opacity: 1, ease: 'none', duration: 0.2 }, 0.8)
+      .fromTo(header, { backgroundColor: 'rgba(240,230,213,0)', color: cream }, { backgroundColor: cream, color: brown, ease: 'none', duration: 0.2 }, 0.8);
+  }
+
+  /* ---------------------------------------------------------
+     3. Tree frame parallax (every page): edge layers at different
+        speeds; trunks slide up along the edges; roots and ground
+        are placed so they land at the foot of the page.
+     --------------------------------------------------------- */
+  var frame = $('.tree-frame');
+  if (frame) {
+    var layer = {};
+    $$('img[data-layer]', frame).forEach(function (el) { layer[el.getAttribute('data-layer')] = el; });
+    var scrollDist = function () { return Math.max(1, html.scrollHeight - window.innerHeight); };
+
+    function layoutTree() {
+      var D = scrollDist(), vh = window.innerHeight;
+      var T = D * SPEED.rootsBottom;           /* travel of the roots/ground group */
+      var roots = layer.rootsBottom, ground = layer.groundBottom;
+      var rootsH = roots ? roots.offsetHeight : 0, groundH = ground ? ground.offsetHeight : 0;
+      var groundTop0 = vh - groundH + T;       /* lands at the bottom edge at page end */
+      var rootsTop0 = groundTop0 - rootsH + Math.round(groundH * 0.35);
+      if (ground) { ground.style.top = groundTop0 + 'px'; }
+      if (roots) { roots.style.top = rootsTop0 + 'px'; }
+      /* trunks: tall enough to reach the roots when everything has travelled */
+      ['trunkLeft', 'trunkRight'].forEach(function (k) {
+        var t = layer[k]; if (!t) { return; }
+        var top0 = t.offsetTop;
+        var rootsTopEnd = rootsTop0 - T;
+        var h = rootsTopEnd + 40 - (top0 - D * SPEED[k]);
+        t.style.height = Math.max(vh * 1.2, h) + 'px';
+      });
+    }
+    ScrollTrigger.addEventListener('refreshInit', layoutTree);
+    layoutTree();
+
+    Object.keys(layer).forEach(function (k) {
+      var el = layer[k], s = SPEED[k];
+      if (typeof s === 'undefined') { return; }
+      gsap.to(el, {
+        y: function () {
+          var d = -scrollDist() * s;
+          if (k === 'leftBranch' || k === 'rightBranch') { d = Math.max(d, -BRANCH_MAX); }
+          if (k === 'bottomCanopy') { d = Math.min(d, CANOPY_MAX); }
+          return d;
+        },
+        ease: 'none',
+        scrollTrigger: { trigger: body, start: 'top top', end: 'bottom bottom', scrub: true, invalidateOnRefresh: true }
+      });
+    });
+  }
+
+  /* ---------------------------------------------------------
+     4. Kashida draw-on: any .kashida-draw path draws with scroll
+        (stroke-dashoffset scrubbed from full length to 0)
+     --------------------------------------------------------- */
+  $$('.kashida-draw path').forEach(function (p) {
+    var len = p.getTotalLength();
+    p.style.strokeDasharray = len;
+    p.style.strokeDashoffset = len;
+    gsap.to(p, {
+      strokeDashoffset: 0, ease: 'none',
+      scrollTrigger: { trigger: p.closest('svg'), start: 'top 88%', end: 'top 45%', scrub: true }
+    });
+  });
+
+  /* ---------------------------------------------------------
+     7. Journey line with dots (and the steps line on How we work):
+        [data-track] holds .track-line path(s) and .track-dot(s).
+        The line draws across the section; each dot pops as the
+        line reaches it.
+     --------------------------------------------------------- */
+  $$('[data-track]').forEach(function (track) {
+    var paths = $$('.track-line path', track);
+    var dots = $$('.track-dot', track);
+    if (!paths.length) { return; }
+    var tl = gsap.timeline({
+      scrollTrigger: { trigger: track, start: 'top 75%', end: 'bottom 70%', scrub: true }
+    });
+    paths.forEach(function (p) {
+      var len = p.getTotalLength();
+      p.style.strokeDasharray = len;
+      p.style.strokeDashoffset = len;
+      tl.to(p, { strokeDashoffset: 0, ease: 'none', duration: 1 }, 0);
+    });
+    dots.forEach(function (d, i) {
+      tl.fromTo(d, { scale: 0 }, { scale: 1, ease: 'back.out(2)', duration: 0.06 }, (i + 0.5) / dots.length - 0.03);
+    });
+  });
+
+  /* ---------------------------------------------------------
+     5. Accordion panels: hover expands (pointer devices), click/
+        focus expands (touch, keyboard). Stacked cards on mobile.
+     --------------------------------------------------------- */
+  $$('[data-accordion]').forEach(function (acc) {
+    var panels = $$('.accordion__panel', acc);
+    var hoverable = window.matchMedia('(hover: hover)').matches;
+    function open(target) {
+      panels.forEach(function (p) {
+        var on = p === target;
+        p.classList.toggle('is-open', on);
+        var btn = $('.accordion__trigger', p);
+        if (btn) { btn.setAttribute('aria-expanded', on ? 'true' : 'false'); }
+      });
+    }
+    panels.forEach(function (p) {
+      var btn = $('.accordion__trigger', p);
+      if (hoverable) { p.addEventListener('mouseenter', function () { if (isDesktop()) { open(p); } }); }
+      if (btn) {
+        btn.addEventListener('click', function () { open(p); });
+        btn.addEventListener('focus', function () { if (isDesktop()) { open(p); } });
+      }
+    });
+  });
+
+  /* ---------------------------------------------------------
+     9. Section reveals (fade + rise, 0.9s ease-out), once;
+     10. images scale 1.02 -> 1 on reveal; .stagger children stagger.
+     --------------------------------------------------------- */
+  $$('.reveal').forEach(function (el) {
+    gsap.to(el, {
+      opacity: 1, y: 0, duration: 0.9, ease: 'power2.out',
+      scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+      onComplete: function () { el.classList.add('is-in'); }
+    });
+  });
+  $$('.reveal-img').forEach(function (el) {
+    gsap.to(el, {
+      scale: 1, duration: 1.2, ease: 'power2.out',
+      scrollTrigger: { trigger: el, start: 'top 88%', once: true }
+    });
+  });
+  $$('.stagger').forEach(function (group) {
+    gsap.to(group.children, {
+      opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', stagger: 0.08,
+      scrollTrigger: { trigger: group, start: 'top 88%', once: true }
+    });
+  });
+
+  /* Refresh triggers once fonts and images have settled */
+  window.addEventListener('load', function () { ScrollTrigger.refresh(); });
+  if (document.fonts && document.fonts.ready) { document.fonts.ready.then(function () { ScrollTrigger.refresh(); }); }
+})();

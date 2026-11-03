@@ -1,0 +1,512 @@
+/* =========================================================
+   Anar Events — site.js (Arch version, fix pass 1, 3 Nov 2026)
+   Requires (loaded before this file, all pinned):
+     GSAP 3.12.5 + ScrollTrigger (cdnjs), Lenis 1.1.18 (unpkg)
+   Order: everything that must work without motion (video loader
+   + pause control, header, drawer, anchors, skip link, accordion,
+   form) runs first. Then `if (!motion) return;` and the numbered
+   motion blocks. If GSAP is missing or prefers-reduced-motion is
+   on, nothing is hidden and nothing scrubs.
+   ========================================================= */
+(function () {
+  'use strict';
+
+  var html = document.documentElement;
+  var body = document.body;
+  var rmq = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var reduced = rmq.matches;
+  var onMQ = function (mq, fn) {
+    if (mq.addEventListener) { mq.addEventListener('change', fn); } else if (mq.addListener) { mq.addListener(fn); }
+  };
+  var hasGsap = typeof window.gsap !== 'undefined' && typeof window.ScrollTrigger !== 'undefined';
+  var motion = hasGsap && !reduced;
+  /* the phone/desktop threshold (769px here and in the CSS header / accordion / journey blocks) */
+  var desktopQuery = window.matchMedia('(min-width: 769px)');
+  var isDesktop = function () { return desktopQuery.matches; };
+  var $ = function (s, c) { return (c || document).querySelector(s); };
+  var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+  var saveData = (navigator.connection && navigator.connection.saveData === true);
+
+  html.classList.add(motion ? 'motion' : 'reduced');
+  if (motion) { gsap.registerPlugin(ScrollTrigger); }
+
+  /* ---------------------------------------------------------
+     0. Hero video + the header pause/play control.
+        The <video> carries no src: the loop mp4 is appended after
+        window 'load', chosen here via matchMedia (1080 on desktop,
+        720 on phones; a media= attribute on <source> is ignored by
+        Chrome and Firefox). No load under reduced motion or
+        Save-Data (the poster stays). Pauses off screen and when
+        the tab is hidden. The control is a real button in the
+        header bar; "paused" is remembered for the session.
+     --------------------------------------------------------- */
+  var heroVideo = $('.hero__video');
+  var videoToggle = $('.motion-toggle');
+  var videoLoaded = false, videoFailed = false;
+  var userPaused = false;
+  try { userPaused = sessionStorage.getItem('anar-video') === 'paused'; } catch (e) { /* storage blocked */ }
+  var playVideo = function () {
+    if (!heroVideo || videoFailed || userPaused || reduced) { return; }
+    var p = heroVideo.play();
+    if (p && p.catch) { p.catch(function () {}); }
+  };
+  var heroInView = function () { return heroVideo && heroVideo.getBoundingClientRect().bottom > 0; };
+  function loadHeroVideo() {
+    if (!heroVideo || videoLoaded || videoFailed || reduced || saveData || userPaused) { return; }
+    var src = heroVideo.getAttribute(isDesktop() ? 'data-src-desktop' : 'data-src-mobile');
+    if (!src) { return; }
+    videoLoaded = true;
+    var source = document.createElement('source');
+    source.type = 'video/mp4';
+    source.src = src;
+    var fallback = function () {
+      if (videoFailed) { return; }
+      videoFailed = true;
+      try { heroVideo.pause(); if (source.parentNode) { heroVideo.removeChild(source); } heroVideo.load(); } catch (e) { /* poster stays */ }
+      setToggle();
+    };
+    source.addEventListener('error', fallback);
+    heroVideo.addEventListener('error', fallback);
+    heroVideo.appendChild(source);
+    if (heroInView() || !('IntersectionObserver' in window)) { heroVideo.load(); playVideo(); }
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) { playVideo(); } else { heroVideo.pause(); } });
+      }, { threshold: 0.05 }).observe(heroVideo);
+    }
+  }
+  var setToggle = function () {
+    if (!videoToggle) { return; }
+    var paused = userPaused || reduced;
+    videoToggle.setAttribute('aria-pressed', paused ? 'true' : 'false');
+    videoToggle.setAttribute('aria-label', paused ? 'Play the video' : 'Pause the video');
+    /* nothing to control: no video, reduced motion (never loads), Save-Data, or a failed file */
+    videoToggle.hidden = !heroVideo || reduced || saveData || videoFailed;
+  };
+  if (heroVideo) {
+    if (document.readyState === 'complete') { loadHeroVideo(); } else { window.addEventListener('load', loadHeroVideo, { once: true }); }
+    document.addEventListener('visibilitychange', function () {
+      if (!videoLoaded) { return; }
+      if (document.hidden) { heroVideo.pause(); } else if (heroInView()) { playVideo(); }
+    });
+  }
+  if (videoToggle) {
+    setToggle();
+    videoToggle.addEventListener('click', function () {
+      userPaused = !userPaused;
+      try { if (userPaused) { sessionStorage.setItem('anar-video', 'paused'); } else { sessionStorage.removeItem('anar-video'); } } catch (e) { /* ignore */ }
+      if (userPaused) { if (heroVideo) { heroVideo.pause(); } }
+      else if (!videoLoaded) { loadHeroVideo(); } else if (heroInView()) { playVideo(); }
+      setToggle();
+    });
+    onMQ(rmq, function (e) { reduced = e.matches; if (reduced && heroVideo) { heroVideo.pause(); } setToggle(); });
+  }
+
+  /* ---------------------------------------------------------
+     Smooth scroll (Lenis) wired to the GSAP ticker
+     --------------------------------------------------------- */
+  var lenis = null;
+  if (motion && typeof window.Lenis !== 'undefined') {
+    try {
+      lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
+      lenis.on('scroll', ScrollTrigger.update);
+      gsap.ticker.add(function (t) { lenis.raf(t * 1000); });
+      gsap.ticker.lagSmoothing(0);
+      html.classList.add('lenis');
+    } catch (e) { lenis = null; }
+  }
+  function headerOffset() { var h = $('.site-header'); return -(h ? h.offsetHeight : 0); }
+  /* every anchor jump transfers focus to its target (tabindex=-1 added when missing), so the skip link and the
+     in-page links move the keyboard too, not only the viewport */
+  function scrollToEl(el) {
+    if (!el.hasAttribute('tabindex')) { el.setAttribute('tabindex', '-1'); }
+    el.focus({ preventScroll: true });
+    if (lenis) { lenis.scrollTo(el, { offset: headerOffset(), duration: 1.4 }); }
+    else { el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' }); }
+  }
+
+  /* ---------------------------------------------------------
+     Header: solid once scrolled; mobile drawer (Escape returns
+     focus to the toggle; the drawer closes when focus leaves the
+     header, on a click outside it, on a link, and past 769px)
+     --------------------------------------------------------- */
+  var header = $('.site-header');
+  var navToggle = $('.nav-toggle');
+  function onScrollState() {
+    if (!header) { return; }
+    var on = (window.scrollY || window.pageYOffset) > 40;
+    if (header.classList.contains('is-scrolled') !== on) { header.classList.toggle('is-scrolled', on); }
+  }
+  if (lenis) { lenis.on('scroll', onScrollState); } else { window.addEventListener('scroll', onScrollState, { passive: true }); }
+  onScrollState();
+  function closeNav() {
+    if (!header || !navToggle) { return; }
+    header.classList.remove('nav-open');
+    navToggle.setAttribute('aria-expanded', 'false');
+  }
+  if (navToggle) {
+    navToggle.addEventListener('click', function () {
+      var open = header.classList.toggle('nav-open');
+      navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && header.classList.contains('nav-open')) { closeNav(); navToggle.focus(); }
+    });
+    $$('.site-nav a', header).forEach(function (a) { a.addEventListener('click', closeNav); });
+    document.addEventListener('click', function (e) {
+      if (header.classList.contains('nav-open') && !header.contains(e.target)) { closeNav(); }
+    }, true);
+    header.addEventListener('focusout', function (e) {
+      if (header.classList.contains('nav-open') && e.relatedTarget && !header.contains(e.relatedTarget)) { closeNav(); }
+    });
+    onMQ(desktopQuery, function (e) { if (e.matches) { closeNav(); } });
+  }
+
+  /* Skip link and same-page anchors (including "index.html#inquire" while on index) */
+  var skip = $('.skip-link'), mainEl = $('#main');
+  if (skip && mainEl) {
+    skip.addEventListener('click', function (e) { e.preventDefault(); closeNav(); scrollToEl(mainEl); });
+  }
+  $$('a[href*="#"]').forEach(function (a) {
+    if (a === skip) { return; }
+    a.addEventListener('click', function (e) {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) { return; }
+      var url = new URL(a.getAttribute('href'), location.href);
+      var norm = function (p) { return p.replace(/\/index\.html$/, '/'); };
+      if (url.origin !== location.origin || norm(url.pathname) !== norm(location.pathname) || !url.hash) { return; }
+      var target = document.getElementById(url.hash.slice(1));
+      if (!target) { return; }
+      e.preventDefault();
+      closeNav();
+      scrollToEl(target);
+      history.pushState(null, '', url.hash);
+    });
+  });
+  /* Land on a hash with the header offset */
+  if (location.hash) {
+    var landing = document.getElementById(location.hash.slice(1));
+    if (landing) { setTimeout(function () { scrollToEl(landing); }, 60); }
+  }
+
+  /* ---------------------------------------------------------
+     Accordion (The celebrations). Registered before the motion
+     guard, so it works under reduced motion and without GSAP.
+     Each trigger controls its body (aria-controls / id).
+     Desktop (769px+): one panel open; the closed bodies are
+     visibility:hidden (CSS) and inert + aria-hidden here; hover
+     and click/Enter/Space open. Phones: stacked cards, each one
+     collapsible (click toggles the description; the title and
+     the Persian line stay visible).
+     --------------------------------------------------------- */
+  $$('[data-accordion]').forEach(function (acc, ai) {
+    var panels = $$('.accordion__panel', acc);
+    var hoverable = window.matchMedia('(hover: hover)').matches;
+    var setShown = function (p, on) {
+      var bodyEl = $('.accordion__body', p), desc = $('.accordion__desc', p);
+      if (isDesktop()) {
+        if (bodyEl) { bodyEl.inert = !on; if (on) { bodyEl.removeAttribute('aria-hidden'); } else { bodyEl.setAttribute('aria-hidden', 'true'); } }
+        if (desc) { desc.hidden = false; }
+      } else {
+        if (bodyEl) { bodyEl.inert = false; bodyEl.removeAttribute('aria-hidden'); }
+        if (desc) { desc.hidden = !on; }
+      }
+      var btn = $('.accordion__trigger', p);
+      if (btn) { btn.setAttribute('aria-expanded', on ? 'true' : 'false'); }
+    };
+    function open(target) {
+      panels.forEach(function (p) {
+        var on = p === target;
+        p.classList.toggle('is-open', on);
+        setShown(p, on);
+      });
+    }
+    function togglePhone(target) {
+      var on = !target.classList.contains('is-open');
+      target.classList.toggle('is-open', on);
+      setShown(target, on);
+    }
+    panels.forEach(function (p, i) {
+      var btn = $('.accordion__trigger', p);
+      var bodyEl = $('.accordion__body', p);
+      if (bodyEl && !bodyEl.id) { bodyEl.id = 'celebration-' + ai + '-' + i; }
+      if (btn && bodyEl) { btn.setAttribute('aria-controls', bodyEl.id); }
+      if (hoverable) { p.addEventListener('mouseenter', function () { if (isDesktop()) { open(p); } }); }
+      if (btn) {
+        btn.addEventListener('click', function () { if (isDesktop()) { open(p); } else { togglePhone(p); } });
+      }
+    });
+    var sync = function () {
+      if (isDesktop()) {
+        var current = panels.filter(function (p) { return p.classList.contains('is-open'); })[0] || panels[0];
+        open(current);
+      } else {
+        panels.forEach(function (p) { setShown(p, p.classList.contains('is-open')); });
+      }
+    };
+    sync();
+    onMQ(desktopQuery, sync);
+  });
+
+  /* ---------------------------------------------------------
+     Inquiry form: novalidate + inline error text per field (the
+     required fields and the email format), a role=status live
+     region, fetch with Accept: application/json, 12 s timeout,
+     values preserved on every error; success and failure messages
+     end with the email and WhatsApp links. The FORMSPREE_ID
+     placeholder is reported as "not connected yet". Without fetch
+     the form submits normally.
+     --------------------------------------------------------- */
+  var form = $('.form[data-ajax]');
+  if (form) {
+    form.setAttribute('novalidate', '');
+    var status = $('.form__status', form);
+    var submitBtn = $('button[type="submit"]', form);
+    var fields = $$('input, select, textarea', form).filter(function (f) { return f.name && f.name.charAt(0) !== '_' && f.type !== 'hidden'; });
+    var errorEl = function (f) { return document.getElementById(f.id + '-error'); };
+    var messageFor = function (f) {
+      if (f.validity.valueMissing) { return f.getAttribute('data-required-msg') || 'Please fill in this field.'; }
+      if (f.type === 'email' && f.validity.typeMismatch) { return 'Please enter an email address we can reply to, like name@example.com.'; }
+      if (f.validity.rangeUnderflow || f.validity.rangeOverflow || f.validity.badInput) { return 'Please enter a number.'; }
+      return f.validationMessage || 'Please check this field.';
+    };
+    var setError = function (f, msg) {
+      var err = errorEl(f);
+      if (msg) {
+        f.setAttribute('aria-invalid', 'true');
+        if (err) { err.textContent = msg; err.hidden = false; f.setAttribute('aria-describedby', err.id); }
+      } else {
+        f.removeAttribute('aria-invalid');
+        if (err) { err.textContent = ''; err.hidden = true; f.removeAttribute('aria-describedby'); }
+      }
+    };
+    var validate = function () {
+      var first = null;
+      fields.forEach(function (f) {
+        if (f.type === 'checkbox') { return; }
+        var ok = f.checkValidity();
+        setError(f, ok ? '' : messageFor(f));
+        if (!ok && !first) { first = f; }
+      });
+      return first;
+    };
+    fields.forEach(function (f) {
+      f.addEventListener('input', function () { if (f.getAttribute('aria-invalid')) { setError(f, f.checkValidity() ? '' : messageFor(f)); } });
+      f.addEventListener('blur', function () { if (f.value || f.getAttribute('aria-invalid')) { setError(f, f.checkValidity() ? '' : messageFor(f)); } });
+    });
+    var contactLinks = function () {
+      var frag = document.createDocumentFragment();
+      var add = function (text, href) {
+        if (!href) { frag.appendChild(document.createTextNode(text)); return; }
+        var a = document.createElement('a');
+        a.href = href; a.textContent = text;
+        if (/^https?:/.test(href)) { a.rel = 'noopener'; }
+        frag.appendChild(a);
+      };
+      add(' write to '); add('hello@anarevents.com', 'mailto:hello@anarevents.com');
+      add(' or '); add('WhatsApp us', 'https://wa.me/19252639949'); add('.');
+      return frag;
+    };
+    var say = function (kind, text, links) {
+      if (!status) { return; }
+      status.hidden = false;
+      status.className = 'form__status is-' + kind;
+      status.textContent = text;
+      if (links) { status.appendChild(contactLinks()); }
+    };
+    var snapshot = function () { try { return new URLSearchParams(new FormData(form)).toString(); } catch (err) { return null; } };
+    form.addEventListener('submit', function (e) {
+      var firstBad = validate();
+      if (firstBad) {
+        e.preventDefault();
+        say('error', 'Please check the highlighted field' + (fields.filter(function (f) { return f.getAttribute('aria-invalid'); }).length > 1 ? 's' : '') + ' and send again.');
+        firstBad.focus();
+        return;
+      }
+      if (!window.fetch || !window.FormData) { return; }   /* native submission */
+      e.preventDefault();
+      if (/FORMSPREE_ID/.test(form.action)) {
+        say('error', 'Online inquiries are not connected yet. Your entries are still here. Please', true);
+        if (status) { status.focus(); }
+        return;
+      }
+      if (submitBtn && submitBtn.disabled) { return; }
+      if (submitBtn) { submitBtn.disabled = true; }
+      say('wait', 'Sending…');
+      var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var timedOut = false, timer;
+      var timeout = new Promise(function (_, reject) {
+        timer = setTimeout(function () { timedOut = true; if (controller) { controller.abort(); } reject(new Error('timeout')); }, 12000);
+      });
+      var sent = snapshot();
+      var options = { method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' } };
+      if (controller) { options.signal = controller.signal; }
+      var request = Promise.race([timeout, Promise.resolve().then(function () { return fetch(form.action, options); })])
+        .then(function (r) { if (!r.ok) { throw new Error('bad status'); } })
+        .then(function () {
+          say('ok', 'Thank you. Your message is on its way; we reply within one business day. Anything to add? Call (925) 263-9949,', true);
+          if (sent !== null && snapshot() === sent) { form.reset(); }
+          if (status) { status.focus(); }
+        })
+        .catch(function () {
+          say('error', timedOut
+            ? 'The connection timed out, so we could not confirm delivery. Nothing you typed was lost: please try again in a moment, or'
+            : 'Your message did not send. Nothing you typed was lost: please try again, or', true);
+          if (status) { status.focus(); }
+        });
+      var done = function () { clearTimeout(timer); if (submitBtn) { submitBtn.disabled = false; } };
+      if (request.finally) { request.finally(done); } else { request.then(done, done); }
+    });
+  }
+
+  /* Keyboard focus inside a reveal target: mark every animated ancestor .is-revealed at once (CSS forces it
+     visible), so nobody tabs into invisible content. The inquiry form carries no reveal class at all. */
+  document.addEventListener('focusin', function (e) {
+    var node = e.target;
+    if (!node || !node.closest || !motion) { return; }
+    while (node && node !== body) {
+      if (node.classList.contains('reveal') || node.classList.contains('reveal-img') || node.classList.contains('stagger') ||
+          (node.parentElement && node.parentElement.classList.contains('stagger'))) {
+        node.classList.add('is-revealed');
+      }
+      node = node.parentElement;
+    }
+  });
+
+  if (!motion) { return; }   /* ===== everything below is motion only ===== */
+
+  /* Drawn lines (.kashida-draw, .track-line) use vector-effect:non-scaling-stroke, so dash values are screen
+     pixels: the dash length is the RENDERED length of the path (the viewBox length would stop a stretched
+     vertical line halfway). Functions, so GSAP re-reads them on refresh. */
+  var lengthOf = function (p) {
+    return function () { var r = p.getBoundingClientRect(); return Math.max(r.width, r.height) || 1; };
+  };
+  var dashOf = function (p) {
+    var len = lengthOf(p);
+    return function () { var l = len(); return l + 'px ' + l + 'px'; };
+  };
+
+  /* ---------------------------------------------------------
+     1. Hero: the foot block (wordmark, descriptor, tagline) sinks
+        and fades slower than the page; the hero fades to cream.
+     --------------------------------------------------------- */
+  var hero = $('.hero');
+  if (hero) {
+    gsap.timeline({ scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom top', scrub: true, invalidateOnRefresh: true } })
+      .to('.hero__foot', { y: 140, opacity: 0, ease: 'none', duration: 1 }, 0)
+      .to('.hero__fade', { opacity: 1, ease: 'none', duration: 0.45 }, 0.55);
+  }
+
+  /* ---------------------------------------------------------
+     3. Tree frame parallax (every page): the edge trunks slide up
+        (capped), the leaves drift more slowly and turn a little.
+        When the painted ground band arrives, the trunks fade out so
+        the ground's own roots take over at the foot of the page.
+     --------------------------------------------------------- */
+  var SPEED = { trunkLeft: 0.12, trunkRight: 0.14, leaf1: 0.05, leaf2: 0.04 };
+  var CAP   = { trunkLeft: 0.5,  trunkRight: 0.5,  leaf1: 0.3,  leaf2: 0.3 };
+  var frame = $('.tree-frame');
+  if (frame) {
+    var scrollDist = function () { return Math.max(1, html.scrollHeight - window.innerHeight); };
+    $$('img[data-layer]', frame).forEach(function (el) {
+      var k = el.getAttribute('data-layer'), s = SPEED[k];
+      if (typeof s === 'undefined') { return; }
+      var isLeaf = k.indexOf('leaf') === 0;
+      gsap.to(el, {
+        y: function () { return -Math.min(scrollDist() * s, window.innerHeight * (CAP[k] || 0.5)); },
+        rotation: isLeaf ? (k === 'leaf1' ? -10 : 8) : 0,
+        ease: 'none',
+        scrollTrigger: { trigger: body, start: 'top top', end: 'bottom bottom', scrub: true, invalidateOnRefresh: true }
+      });
+    });
+    var ground = $('.ground');
+    if (ground) {
+      gsap.to($$('img[data-layer^="trunk"]', frame), {
+        opacity: 0, ease: 'none',
+        scrollTrigger: { trigger: ground, start: 'top bottom', end: 'top 45%', scrub: true }
+      });
+    }
+  }
+
+  /* ---------------------------------------------------------
+     4. Kashida draw-on: any .kashida-draw path draws with scroll
+     --------------------------------------------------------- */
+  $$('.kashida-draw path').forEach(function (p) {
+    gsap.fromTo(p, { strokeDasharray: dashOf(p), strokeDashoffset: lengthOf(p) }, {
+      strokeDashoffset: 0, ease: 'none',
+      scrollTrigger: { trigger: p.closest('svg'), start: 'top 88%', end: 'top 45%', scrub: true, invalidateOnRefresh: true }
+    });
+  });
+
+  /* ---------------------------------------------------------
+     7. Journey line with dots (and the steps line on How we work):
+        [data-track] holds .track-line path(s) and .track-dot(s).
+        The line draws across the section; each dot pops as the
+        line reaches it (its position measured along the track).
+     --------------------------------------------------------- */
+  var offsetWithin = function (el, root, prop) {
+    var v = 0;
+    while (el && el !== root) { v += el[prop]; el = el.offsetParent; }
+    return v;
+  };
+  $$('[data-track]').forEach(function (track) {
+    var paths = $$('.track-line path', track);
+    var dots = $$('.track-dot', track);
+    if (!paths.length) { return; }
+    var horizontal = function () {
+      return paths.some(function (p) { var r = p.getBoundingClientRect(); return r.width > r.height; });
+    };
+    var ats = [];
+    var measure = function () {
+      var h = horizontal();
+      var size = (h ? track.offsetWidth : track.offsetHeight) || 1;
+      ats = dots.map(function (d) { return Math.min(1, Math.max(0, (offsetWithin(d, track, h ? 'offsetLeft' : 'offsetTop') + 7) / size)); });
+    };
+    var dotTls = dots.map(function (d) {
+      return gsap.timeline({ paused: true }).fromTo(d, { scale: 0 }, { scale: 1, ease: 'back.out(2)', duration: 0.3 });
+    });
+    var syncDots = function (st) {
+      dotTls.forEach(function (t, i) { if (st.progress >= ats[i]) { t.play(); } else { t.reverse(); } });
+    };
+    measure();
+    var tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: track, start: 'top 78%', end: 'bottom 60%', scrub: true, invalidateOnRefresh: true,
+        onRefreshInit: measure, onRefresh: syncDots, onUpdate: syncDots
+      }
+    });
+    paths.forEach(function (p) {
+      tl.fromTo(p, { strokeDasharray: dashOf(p), strokeDashoffset: lengthOf(p) }, { strokeDashoffset: 0, ease: 'none', duration: 1 }, 0);
+    });
+  });
+
+  /* ---------------------------------------------------------
+     9. Section reveals (fade + rise, 0.9s ease-out), once;
+     10. images scale 1.02 -> 1 on reveal; .stagger children stagger.
+        Anything already inside the viewport is shown at once.
+     --------------------------------------------------------- */
+  var limit = window.innerHeight * 0.88;
+  var seen = function (el) { return el.getBoundingClientRect().top < limit; };
+  $$('.reveal').forEach(function (el) {
+    if (seen(el)) { gsap.set(el, { opacity: 1, y: 0 }); el.classList.add('is-in'); return; }
+    gsap.to(el, {
+      opacity: 1, y: 0, duration: 0.9, ease: 'power2.out',
+      scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+      onComplete: function () { el.classList.add('is-in'); }
+    });
+  });
+  $$('.reveal-img').forEach(function (el) {
+    if (seen(el)) { gsap.set(el, { scale: 1 }); return; }
+    gsap.to(el, { scale: 1, duration: 1.2, ease: 'power2.out', scrollTrigger: { trigger: el, start: 'top 88%', once: true } });
+  });
+  $$('.stagger').forEach(function (group) {
+    if (seen(group)) { gsap.set(group.children, { opacity: 1, y: 0 }); return; }
+    gsap.to(group.children, {
+      opacity: 1, y: 0, duration: 0.8, ease: 'power2.out', stagger: 0.08,
+      scrollTrigger: { trigger: group, start: 'top 88%', once: true }
+    });
+  });
+
+  /* Refresh triggers once fonts and images have settled */
+  window.addEventListener('load', function () { ScrollTrigger.refresh(); });
+  if (document.fonts && document.fonts.ready) { document.fonts.ready.then(function () { ScrollTrigger.refresh(); }); }
+})();

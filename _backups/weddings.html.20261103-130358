@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weddings · Anar Events</title>
+<meta name="description" content="Sofreh aghd, nikah, mehndi and sangeet, reception and walima. Anar Events plans each tradition with your family, ritual by ritual, in the San Francisco Bay Area.">
+<meta name="theme-color" content="#F0E6D5">
+<script>document.documentElement.classList.add('js')</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="assets/fonts/TTRamillas-Bold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&display=swap">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="icon" href="assets/logo/logo-red.svg" type="image/svg+xml">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script defer src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+<script defer src="assets/js/site.js"></script>
+</head>
+<body class="page-weddings">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="tree-frame" aria-hidden="true">
+  <img data-layer="leftBranch" width="2752" height="1536" alt="" loading="lazy" decoding="async">
+  <img data-layer="rightBranch" width="2752" height="1536" alt="" loading="lazy" decoding="async">
+</div>
+
+<header class="site-header site-header--solid">
+  <div class="site-header__inner">
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav"><span class="nav-toggle__bar"></span><span class="visually-hidden">Menu</span></button>
+    <nav class="site-nav" id="site-nav" aria-label="Main">
+      <ul>
+        <li><a href="weddings.html" aria-current="page">Weddings</a></li>
+        <li><a href="how-we-work.html">How we work</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+    </nav>
+    <a class="site-logo" href="index.html" aria-label="Anar Events, home">
+      <img class="site-logo__red" src="assets/logo/logo-red.svg" width="1600" height="552" alt="Anar Events">
+      <img class="site-logo__cream" src="assets/logo/logo-cream.svg" width="1600" height="552" alt="" aria-hidden="true">
+    </a>
+    <a class="site-inquire" href="index.html#inquire">Inquire</a>
+  </div>
+</header>
+
+<main id="main" class="page-top">
+
+  <section class="band on-brown" aria-labelledby="page-title">
+    <div class="container">
+      <p class="eyebrow">Persian, Afghan and South Asian weddings · San Francisco Bay Area</p>
+      <div class="band__title">
+        <h1 id="page-title" class="h-display">Weddings</h1>
+        <p class="fa fa--title" lang="fa" dir="rtl">عروسی</p>
+      </div>
+      <hr class="rule" style="margin:32px 0 24px">
+      <p class="lede measure">Our celebrations are built on centuries of poetry, hospitality and sacred tradition, and they deserve more than a cookie-cutter approach. We honor the deep soul of your heritage while stripping away the stress and the outdated tropes.</p>
+    </div>
+  </section>
+
+  <!-- Sofreh Aghd -->
+  <section class="section tradition" id="sofreh-aghd" aria-labelledby="t-sofreh">
+    <div class="container">
+      <div class="tradition__grid">
+        <div class="tradition__text">
+          <div class="tradition__title reveal">
+            <h2 id="t-sofreh">Sofreh Aghd</h2>
+            <p class="fa fa--big" lang="fa" dir="rtl">سفرهٔ عقد</p>
+          </div>
+          <div class="stagger">
+            <p>The spread at the head of the room: mirror, candlesticks, honey, bread, coins, the pomegranate.</p>
+            <p>We design an architectural, modern sofreh and lay it exactly as your family keeps it.</p>
+            <p>Every item is named in both languages, so guests from the other family learn each one at a glance.</p>
+          </div>
+        </div>
+        <figure class="tradition__media reveal">
+          <div class="window"><img class="reveal-img" src="assets/img/pom-open-closeup.jpg" width="2000" height="1123" alt="An opened pomegranate, seeds packed tight" loading="lazy" decoding="async"></div>
+          <figcaption class="caption">The sofreh is ready. Your grandparents are seated.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Nikah -->
+  <section class="section tradition tradition--flip" id="nikah" aria-labelledby="t-nikah">
+    <div class="container">
+      <div class="tradition__grid">
+        <div class="tradition__text">
+          <div class="tradition__title reveal">
+            <h2 id="t-nikah">Nikah</h2>
+            <p class="fa fa--big" lang="fa" dir="rtl">نکاح</p>
+          </div>
+          <div class="stagger">
+            <p>The marriage contract, read before witnesses and both families.</p>
+            <p>We cue the officiant and the family, hold the elders' seats, and keep the room quiet and steady.</p>
+            <p>A one-line programme explains the ritual, so every guest can follow.</p>
+          </div>
+        </div>
+        <figure class="tradition__media reveal">
+          <div class="window"><img class="reveal-img" src="assets/img/pom-in-hand.jpg" width="1500" height="2000" alt="A pomegranate held in an open hand" loading="lazy" decoding="async"></div>
+          <figcaption class="caption">Quiet, exact, unhurried.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mehndi & Sangeet -->
+  <section class="section tradition" id="mehndi-sangeet" aria-labelledby="t-mehndi">
+    <div class="container">
+      <div class="tradition__grid">
+        <div class="tradition__text">
+          <div class="tradition__title reveal">
+            <h2 id="t-mehndi">Mehndi &amp; Sangeet</h2>
+            <p class="fa fa--big" lang="fa" dir="rtl">حنابندان</p>
+          </div>
+          <div class="stagger">
+            <p>The henna night: music, dance and henna on the bride's hands.</p>
+            <p>The sangeet, where both families sing and dance, and the baraat that arrives with music.</p>
+            <p>High energy, run to the minute, with the elders' blessing first.</p>
+          </div>
+        </div>
+        <figure class="tradition__media reveal">
+          <div class="window"><img class="reveal-img" src="assets/img/pom-pile.jpg" width="1411" height="2000" alt="A pile of pomegranates" loading="lazy" decoding="async"></div>
+          <figcaption class="caption">Both families, one dance floor.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Reception & Walima -->
+  <section class="section tradition tradition--flip" id="reception-walima" aria-labelledby="t-reception">
+    <div class="container">
+      <div class="tradition__grid">
+        <div class="tradition__text">
+          <div class="tradition__title reveal">
+            <h2 id="t-reception">Reception &amp; Walima</h2>
+            <p class="fa fa--big" lang="fa" dir="rtl">جشن عروسی · ولیمه</p>
+          </div>
+          <div class="stagger">
+            <p>Welcome sign, seating, menu and table numbers in both digit sets.</p>
+            <p>The timeline called with the venue and every vendor, from the first dance to the 2 AM dance floor.</p>
+            <p>A favour box for each family at the send-off, and a thank-you card that follows.</p>
+          </div>
+        </div>
+        <figure class="tradition__media reveal">
+          <div class="window"><img class="reveal-img" src="assets/img/pom-tree-night.jpg" width="1125" height="2000" alt="A pomegranate tree at night" loading="lazy" decoding="async"></div>
+          <figcaption class="caption">From the sacred vows to the last song.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Seasonal note -->
+  <section class="section section--tight tradition" id="seasons" aria-labelledby="t-seasons">
+    <div class="container container--text">
+      <div class="seasonal reveal">
+        <div class="tradition__title">
+          <h2 id="t-seasons">Nowruz &amp; Yalda</h2>
+          <p class="fa fa--big" lang="fa" dir="rtl">نوروز · شب یلدا</p>
+        </div>
+        <p>Spring, and the longest night. If your date falls near Nowruz or Shab-e Yalda, we fold the haft-sin or the pomegranate table into the celebration, in the season's own colours.</p>
+        <p style="margin-top:16px">Two heritages at one table? We blend cultures across a multi-day celebration without diluting either.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Static leaf band: the foot of the page content, above the CTA band -->
+  <div class="leaf-band" aria-hidden="true"><img src="assets/tree/painted/bottom-canopy.webp" width="2752" height="1536" alt="" loading="lazy" decoding="async"></div>
+
+  <section class="cta on-brown" aria-labelledby="cta-title">
+    <div class="container">
+      <h2 id="cta-title" class="cta__title reveal">Reimagined Heritage</h2>
+      <p class="fa fa--big reveal" lang="fa" dir="rtl" style="text-align:center">میراث، از نو</p>
+      <p class="reveal"><a class="btn btn--amber" href="index.html#inquire">Inquire</a></p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer on-brown">
+  <div class="ground-band" aria-hidden="true"><img src="assets/tree/painted/ground-bottom.webp" width="2752" height="1536" alt="" loading="lazy" decoding="async"></div>
+  <div class="container">
+    <div class="site-footer__grid">
+      <div>
+        <img class="site-footer__logo" src="assets/logo/logo-cream-url.svg" width="1600" height="552" alt="Anar Events · anarevents.com" loading="lazy">
+      </div>
+      <address>
+        <span>Anar Events · San Francisco Bay Area</span>
+        <a href="tel:+19252639949">(925) 263-9949</a>
+        <a href="mailto:hello@anarevents.com">hello@anarevents.com</a>
+        <a href="https://instagram.com/anarevents" rel="noopener">Instagram · @anarevents</a>
+      </address>
+      <p class="site-footer__fa fa" lang="fa" dir="rtl">انار · برنامه‌ریزی عروسی و جشن</p>
+    </div>
+    <p class="site-footer__legal"><span>© 2026 Anar LLC. Persian, Afghan and South Asian weddings.</span><span>Timeless traditions, curated for the modern era.</span></p>
+  </div>
+</footer>
+</body>
+</html>

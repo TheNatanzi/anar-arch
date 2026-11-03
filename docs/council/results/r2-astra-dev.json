@@ -1,0 +1,37 @@
+{
+ "model": "astra",
+ "role": "dev",
+ "score": 7,
+ "blocking": [
+  "Desktop accordion content can be clipped at intermediate widths and short viewport heights: six panels share a fixed-height container, while the expanded panel hides overflow.",
+  "Changing reduced-motion preferences after loading leaves GSAP animations and Lenis running.",
+  "On mobile, navigation disappears if site.js fails; desktop accordion descriptions also remain inaccessible without JavaScript."
+ ],
+ "fixes": [
+  {
+   "where": "assets/css/site.css — desktop accordion rules",
+   "what": "Keep stacked cards until the expanded panel has sufficient readable width. Replace the fixed accordion height with content-aware sizing that accommodates every description, including at 200% zoom.",
+   "why": "overflow:hidden currently permits ceremony text to be cut off without a way to scroll it."
+  },
+  {
+   "where": "assets/js/site.js — rmq listener and motion initialization",
+   "what": "Manage all animation setup through a reversible media-query context. On reduced motion, revert GSAP animations, destroy Lenis, remove its ticker callback, and reveal all content; rebuild only when motion is enabled.",
+   "why": "The existing preference-change listener pauses only the video; CSS cannot stop JavaScript-driven motion."
+  },
+  {
+   "where": "assets/css/site.css and assets/js/site.js — navigation and accordion enhancement",
+   "what": "Make navigation links and all ceremony descriptions visible by default. Apply collapsed states only after each component's event handlers initialize successfully.",
+   "why": "A failed local script currently removes essential navigation and ceremony content."
+  },
+  {
+   "where": "assets/js/site.js — lengthOf/dashOf; assets/css/site.css — .scribble path",
+   "what": "Use path.getTotalLength() for ordinary SVG paths such as the kashida. Handle non-scaling-stroke journey paths separately, with dash measurements appropriate to their rendered coordinate system.",
+   "why": "Kashida paths lack non-scaling-stroke, so using bounding-box pixels mismeasures their dash length and can produce broken or incomplete strokes."
+  },
+  {
+   "where": "assets/js/site.js — playVideo/setToggle",
+   "what": "Synchronize the video button with play, pause, and error events, and update it when play() rejects. Retain userPaused separately as playback intent.",
+   "why": "Autoplay rejection currently leaves a paused poster showing a misleading Pause control."
+  }
+ ]
+}

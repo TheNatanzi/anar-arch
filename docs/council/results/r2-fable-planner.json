@@ -1,0 +1,38 @@
+{
+ "model": "fable",
+ "role": "planner",
+ "score": 8,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "index.html hero .hero__tag",
+   "what": "Split the Persian line and the English tagline into two block-level spans (Persian on its own line above the English) instead of one mixed RTL/LTR sentence joined by a middle dot.",
+   "why": "At 390px the bidi line wraps mid-phrase ('Timeless traditions, / curated for the modern era.'), so the first thing a parent reads on the hero looks broken."
+  },
+  {
+   "where": "index.html #celebration-4 .accordion__desc",
+   "what": "Replace the fragment 'If your family observes the haldi, the turmeric before the wedding.' with 'If your family observes the haldi, the turmeric blessing comes the day before.'",
+   "why": "It is the only sentence fragment on the page and sits in the Hindu card, exactly where a South Asian family tests fluency."
+  },
+  {
+   "where": "index.html form: labels for #f-date and #f-guests",
+   "what": "Add the same '(optional)' muted span used on Phone, City and Budget to 'Wedding date(s) or season' and 'Largest day's guest count'.",
+   "why": "Parents read an unmarked field as required; the small note above is easy to miss and the inconsistency makes them hesitate at the first screen of the form."
+  },
+  {
+   "where": "index.html #inquire intro paragraph",
+   "what": "Change 'Thank you for writing. Tell us about your family. We reply within one business day.' to 'Tell us about your family, your dates and the rituals that matter most. We reply within one business day.' (the thank-you already lives in the success message).",
+   "why": "Thanking people before they have written reads as a pasted reply and undercuts the calm, exact tone the rest of the copy earns."
+  },
+  {
+   "where": "index.html .pills (journey__extras) and the Traditions fieldset",
+   "what": "Add 'Dholki / Mayun' to the celebrations list and as a checkbox, next to Mehndi / Henna.",
+   "why": "Pakistani families look for their own day names; the Weddings page already mentions the dholki, so the home list and form should not silently drop it."
+  },
+  {
+   "where": "assets/css/site.css .pill:not(:last-child)::after",
+   "what": "Move the separator to .pill:not(:first-child)::before with margin-right instead of ::after, so a wrapped line never ends in a dangling middle dot.",
+   "why": "On the phone shot the list shows orphan dots at line ends ('Sangeet ·', 'Aghd ·'), which makes the tradition names harder to scan."
+  }
+ ]
+}

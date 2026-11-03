@@ -1,0 +1,28 @@
+{
+ "model": "argon",
+ "role": "dev",
+ "score": 9,
+ "blocking": [],
+ "fixes": [
+  {
+   "where": "assets/js/site.js:183",
+   "what": "Attach a transitionend listener to the accordion container (on 'height' or 'flex') or call ScrollTrigger.refresh() inside togglePhone() when a panel toggles on mobile.",
+   "why": "Toggling accordion panels on mobile alters the document height, causing downstream ScrollTrigger start/end positions (journey line, ground trunk fade) to drift."
+  },
+  {
+   "where": "index.html:27 & weddings.html:26",
+   "what": "Remove loading=\"lazy\" from the trunkLeft and trunkRight <img> elements inside .tree-frame.",
+   "why": "The trunks are fixed to the viewport and visible immediately on screen 1; lazy-loading above-the-fold fixed assets delays their initial paint."
+  },
+  {
+   "where": "assets/css/site.css:154",
+   "what": "Remove will-change: transform, opacity from .hero__foot (GSAP sets inline transforms during scrub anyway).",
+   "why": "Keeping a permanent will-change layer on the huge SVG wordmark wastes GPU memory and can cause subtle rasterization blurring on some mobile browsers."
+  },
+  {
+   "where": "assets/js/site.js:354",
+   "what": "Add onRefresh: function(st) { if (st.progress > 0) { ... } } or ensure ScrollTrigger.refresh() is called if the user resizes across the 769px breakpoint.",
+   "why": "When resizing across 769px, the journey track switches between horizontal and vertical SVG paths; forcing a ScrollTrigger refresh on desktopQuery change guarantees dash lengths recalculate immediately."
+  }
+ ]
+}
